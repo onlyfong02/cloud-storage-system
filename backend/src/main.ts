@@ -1,55 +1,69 @@
+import { INestApplicationContext, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+
+let cachedApp: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  if (!cachedApp) {
+    const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
-  const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',')
-    : ['http://localhost:5173', 'http://localhost:5174', 'https://cloud-storage-system-client.vercel.app'];
+    // Enable CORS
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(',')
+      : ['http://localhost:5173', 'http://localhost:5174', 'https://cloud-storage-system-client.vercel.app'];
 
-  app.enableCors({
-    origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
-    optionsSuccessStatus: 204,
-  });
+    app.enableCors({
+      origin: allowedOrigins,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      credentials: true,
+      allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
+      optionsSuccessStatus: 204,
+    });
 
-  // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
+    // Global validation pipe
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
 
-  // Swagger documentation
-  const config = new DocumentBuilder()
-    .setTitle('Cloud Storage API')
-    .setDescription('API for Cloud Storage System using Google Drive')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    // Swagger documentation
+    const config = new DocumentBuilder()
+      .setTitle('Cloud Storage API')
+      .setDescription('API for Cloud Storage System using Google Drive')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
 
-  // Global prefix
-  app.setGlobalPrefix('api');
+    // Global prefix
+    app.setGlobalPrefix('api');
 
-  const port = process.env.PORT || 4000;
-  if (process.env.NODE_ENV !== 'production') {
-    await app.listen(port);
-    console.log(`Application is running on: http://localhost:${port}`);
-    console.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
+    await app.init();
+    cachedApp = app.getHttpAdapter().getInstance();
   }
-  return app.getHttpServer();
+  return cachedApp;
 }
 
-// Trigger restart to load new .env OAuth2 credentials
-const handler = bootstrap();
-export default handler;
+export default async (req: any, res: any) => {
+  const app = await bootstrap();
+  return app(req, res);
+};
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const startLocal = async () => {
+    const app = await NestFactory.create(AppModule);
+    app.setGlobalPrefix('api');
+    app.enableCors();
+    const port = process.env.PORT || 4000;
+    await app.listen(port);
+    console.log(`Local application is running on: http://localhost:${port}/api`);
+  };
+  startLocal().catch(err => console.error(err));
+}
