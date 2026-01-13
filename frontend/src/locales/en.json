@@ -1,0 +1,134 @@
+{
+    "auth": {
+        "login": {
+            "title": "Welcome",
+            "subtitle": "Login to your Cloud Storage",
+            "email": "Email",
+            "password": "Password",
+            "submit": "Login",
+            "processing": "Processing...",
+            "noAccount": "Don't have an account?",
+            "registerNow": "Register now",
+            "success": "Logged in successfully",
+            "failed": "Login failed. Please try again."
+        },
+        "register": {
+            "title": "Join Us",
+            "subtitle": "Create a new Cloud Storage account",
+            "name": "Full Name",
+            "namePlaceholder": "John Doe",
+            "email": "Email",
+            "password": "Password",
+            "confirmPassword": "Confirm Password",
+            "submit": "Register Now",
+            "processing": "Processing...",
+            "hasAccount": "Already have an account?",
+            "loginNow": "Login",
+            "success": "Account registered successfully",
+            "failed": "Registration failed. Please try again.",
+            "passwordMismatch": "Passwords do not match",
+            "passwordTooShort": "Password must be at least 6 characters"
+        }
+    },
+    "dashboard": {
+        "title": "Cloud Storage",
+        "admin": "Admin",
+        "logout": "Logout",
+        "storage": {
+            "title": "Storage Capacity",
+            "used": "Used: {{used}}",
+            "total": "{{percentage}}% / {{total}}",
+            "used_short": "Used",
+            "total_short": "Capacity",
+            "status": {
+                "good": "Good",
+                "moderate": "Moderate",
+                "full": "Almost Full"
+            }
+        },
+        "stats": {
+            "totalFiles": "Total Files",
+            "images": "Images",
+            "videos": "Videos",
+            "audios": "Audio",
+            "others": "Others"
+        },
+        "actions": {
+            "upload": "UPLOAD FILE",
+            "uploading": "UPLOADING... {{progress}}%",
+            "refresh": "REFRESH",
+            "uploadHint": "Click to select or drag and drop files here"
+        },
+        "files": {
+            "title": "Your Files",
+            "empty": "No files yet",
+            "download": "Download",
+            "preview": "Preview",
+            "delete": "Delete",
+            "uploads": {
+                "title": "Upload Queue ({{count}})",
+                "remaining": "remaining",
+                "clear": "Clear completed",
+                "added": "Added {{count}} files to queue",
+                "overall": "Overall Progress",
+                "resume": "Resume (Select file)",
+                "retry": "Retry"
+            },
+            "deleteConfirm": "Are you sure you want to delete \"{{name}}\"?",
+            "uploadSuccess": "Uploaded successfully: {{name}}",
+            "uploadFailed": "Upload failed",
+            "downloading": "Preparing download: {{name}}...",
+            "downloadSuccess": "Downloaded successfully",
+            "downloadFailed": "Download failed",
+            "deleting": "Deleting file: {{name}}...",
+            "previewUnavailable": "Preview unavailable for this file",
+            "deleteSuccess": "Deleted file: {{name}}",
+            "deleteFailed": "Delete failed",
+            "pagination": "Showing {{count}} / {{total}} files",
+            "page": "PAGE {{current}} / {{total}}",
+            "perPage": "per page"
+        }
+    },
+    "admin": {
+        "panel": "Admin Panel",
+        "subtitle": "System Management",
+        "back": "Back",
+        "stats": {
+            "totalUsers": "Total Users",
+            "activeUsers": "Active Users",
+            "totalFiles": "Total Files",
+            "usedStorage": "Used Storage"
+        },
+        "search": {
+            "placeholder": "Search by email or name...",
+            "submit": "SEARCH"
+        },
+        "users": {
+            "title": "User List",
+            "table": {
+                "user": "User",
+                "role": "Role",
+                "status": "Status",
+                "storage": "Storage",
+                "quota": "Quota",
+                "actions": "Actions"
+            },
+            "status": {
+                "active": "ACTIVE",
+                "inactive": "INACTIVE"
+            },
+            "actions": {
+                "lock": "LOCK",
+                "unlock": "UNLOCK",
+                "updateFailed": "Update failed",
+                "cannotLockSelf": "Cannot change your own status"
+            },
+            "pagination": "Showing {{count}} / {{total}} users",
+            "page": "PAGE {{current}} / {{total}}"
+        },
+        "noAccess": "Access Denied"
+    },
+    "common": {
+        "loading": "Loading..."
+    }
+}

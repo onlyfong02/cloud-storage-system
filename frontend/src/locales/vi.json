@@ -1,0 +1,134 @@
+{
+    "auth": {
+        "login": {
+            "title": "Chào mừng",
+            "subtitle": "Đăng nhập vào Cloud Storage của bạn",
+            "email": "Email",
+            "password": "Mật khẩu",
+            "submit": "Đăng nhập",
+            "processing": "Đang xử lý...",
+            "noAccount": "Chưa có tài khoản?",
+            "registerNow": "Đăng ký ngay",
+            "success": "Đăng nhập thành công",
+            "failed": "Đăng nhập thất bại. Vui lòng thử lại."
+        },
+        "register": {
+            "title": "Tham gia",
+            "subtitle": "Tạo tài khoản Cloud Storage mới",
+            "name": "Họ và tên",
+            "namePlaceholder": "Nguyễn Văn A",
+            "email": "Email",
+            "password": "Mật khẩu",
+            "confirmPassword": "Xác nhận mật khẩu",
+            "submit": "Đăng ký ngay",
+            "processing": "Đang xử lý...",
+            "hasAccount": "Đã có tài khoản?",
+            "loginNow": "Đăng nhập",
+            "success": "Đăng ký tài khoản thành công",
+            "failed": "Đăng ký thất bại. Vui lòng thử lại.",
+            "passwordMismatch": "Mật khẩu không khớp",
+            "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự"
+        }
+    },
+    "dashboard": {
+        "title": "Cloud Storage",
+        "admin": "Admin",
+        "logout": "Đăng xuất",
+        "storage": {
+            "title": "Dung lượng lưu trữ",
+            "used": "Đã sử dụng: {{used}}",
+            "total": "{{percentage}}% / {{total}}",
+            "used_short": "Đã dùng",
+            "total_short": "Dung lượng",
+            "status": {
+                "good": "Tốt",
+                "moderate": "Trung bình",
+                "full": "Sắp đầy"
+            }
+        },
+        "stats": {
+            "totalFiles": "Tổng file",
+            "images": "Ảnh",
+            "videos": "Video",
+            "audios": "Âm thanh",
+            "others": "Khác"
+        },
+        "actions": {
+            "upload": "TẢI FILE LÊN",
+            "uploading": "ĐANG TẢI... {{progress}}%",
+            "refresh": "LÀM MỚI",
+            "uploadHint": "Nhấp để chọn hoặc kéo thả file vào đây"
+        },
+        "files": {
+            "title": "Files của bạn",
+            "empty": "Chưa có file nào",
+            "download": "Tải xuống",
+            "preview": "Xem trước",
+            "delete": "Xoá file",
+            "uploads": {
+                "title": "Hàng đợi upload ({{count}})",
+                "remaining": "đang tải",
+                "clear": "Xoá các file hoàn tất",
+                "added": "Đã thêm {{count}} file vào hàng đợi",
+                "overall": "Tiến độ tổng thể",
+                "resume": "Tiếp tục (Chọn file)",
+                "retry": "Thử lại"
+            },
+            "deleteConfirm": "Bạn có chắc muốn xóa file \"{{name}}\"?",
+            "uploadSuccess": "Tải lên thành công: {{name}}",
+            "uploadFailed": "Tải lên thất bại",
+            "downloading": "Đang chuẩn bị tải xuống: {{name}}...",
+            "downloadSuccess": "Tải xuống thành công",
+            "downloadFailed": "Tải xuống thất bại",
+            "deleting": "Đang xóa file: {{name}}...",
+            "previewUnavailable": "Không có bản xem trước cho file này",
+            "deleteSuccess": "Đã xóa file: {{name}}",
+            "deleteFailed": "Xóa thất bại",
+            "pagination": "Hiển thị {{count}} / {{total}} file",
+            "page": "TRANG {{current}} / {{total}}",
+            "perPage": "mỗi trang"
+        }
+    },
+    "admin": {
+        "panel": "Admin Panel",
+        "subtitle": "Quản lý hệ thống",
+        "back": "Quay lại",
+        "stats": {
+            "totalUsers": "Tổng người dùng",
+            "activeUsers": "Đang hoạt động",
+            "totalFiles": "Tổng files",
+            "usedStorage": "Dung lượng sử dụng"
+        },
+        "search": {
+            "placeholder": "Tìm kiếm theo email hoặc tên...",
+            "submit": "TÌM KIẾM"
+        },
+        "users": {
+            "title": "Danh sách người dùng",
+            "table": {
+                "user": "Người dùng",
+                "role": "Role",
+                "status": "Trạng thái",
+                "storage": "Dung lượng",
+                "quota": "Quota",
+                "actions": "Hành động"
+            },
+            "status": {
+                "active": "ACTIVE",
+                "inactive": "INACTIVE"
+            },
+            "actions": {
+                "lock": "KHOÁ",
+                "unlock": "MỞ",
+                "updateFailed": "Cập nhật thất bại",
+                "cannotLockSelf": "Không thể thay đổi trạng thái của chính mình"
+            },
+            "pagination": "Hiển thị {{count}} / {{total}} người dùng",
+            "page": "TRANG {{current}} / {{total}}"
+        },
+        "noAccess": "Không có quyền truy cập"
+    },
+    "common": {
+        "loading": "Đang tải..."
+    }
+}

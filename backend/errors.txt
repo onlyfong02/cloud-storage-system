@@ -1,0 +1,1 @@
+src/files/files.controller.ts(74,26): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
