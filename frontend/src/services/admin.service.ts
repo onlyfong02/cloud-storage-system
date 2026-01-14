@@ -56,8 +56,9 @@ export const adminService = {
         return response.data;
     },
 
-    getAllSharedPermissions: async (): Promise<any[]> => {
-        const response = await api.get('/files/admin/permissions/all');
+    getAllSharedPermissions: async (page = 1, limit = 10): Promise<{ permissions: any[], total: number, totalPages: number }> => {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        const response = await api.get(`/files/admin/permissions/all?${params}`);
         return response.data;
     },
 

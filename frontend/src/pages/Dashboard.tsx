@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import { fileService, authService, type FileMetadata } from '@/services';
+import { fileService, authService, feedbackService, type FileMetadata, type Feedback } from '@/services';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatBytes, formatDate, getFileIcon } from '@/lib/utils';
@@ -10,12 +10,10 @@ import {
     Upload,
     Download,
     Trash2,
-    LogOut,
     HardDrive,
     FileIcon,
     Loader2,
     RefreshCw,
-    Settings,
     LayoutGrid,
     List,
     Eye,
@@ -25,11 +23,11 @@ import {
     MoveVertical,
     ChevronRight,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { UserMenu } from '@/components/UserMenu';
 import { useUploadStore } from '@/store/useUploadStore';
 import { UploadQueue } from '@/components/UploadQueue';
+import { FeedbackUnifiedModal } from '@/components/FeedbackUnifiedModal';
 
 export default function Dashboard() {
     const { t } = useTranslation();
@@ -76,6 +74,33 @@ export default function Dashboard() {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [fileToDelete, setFileToDelete] = useState<FileMetadata | null>(null);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [feedbackRefreshTrigger, setFeedbackRefreshTrigger] = useState(0);
+    const [hasUnreadFeedback, setHasUnreadFeedback] = useState(false);
+
+    useEffect(() => {
+        checkFeedbackStatus();
+    }, [feedbackRefreshTrigger]);
+
+    const checkFeedbackStatus = async () => {
+        try {
+            const data = await feedbackService.getMyFeedback(1, 100); // Check recent feedbacks
+            const lastChecked = localStorage.getItem('lastCheckedFeedback');
+            const hasNewReplies = data.feedbacks.some((f: Feedback) =>
+                f.isReplied && (!lastChecked || new Date(f.updatedAt) > new Date(lastChecked))
+            );
+            setHasUnreadFeedback(hasNewReplies);
+        } catch (error) {
+            console.error('Failed to check feedback:', error);
+        }
+    };
+
+    const handleOpenFeedback = () => {
+        setIsFeedbackOpen(true);
+        // Mark as read (update timestamp)
+        localStorage.setItem('lastCheckedFeedback', new Date().toISOString());
+        setHasUnreadFeedback(false);
+    };
 
     const getStorageStatus = (percentage: number) => {
         if (percentage < 50) return { label: t('dashboard.storage.status.good'), color: 'bg-green-500', textColor: 'text-green-600' };
@@ -329,27 +354,12 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                        <LanguageSwitcher />
-                        {user?.role === 'ADMIN' && (
-                            <Link to="/admin">
-                                <Button variant="outline" size="sm" className="bg-[hsl(var(--secondary))] h-8 text-[10px] sm:text-sm sm:h-9">
-                                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                                    <span className="hidden xs:inline">{t('dashboard.admin')}</span>
-                                </Button>
-                            </Link>
-                        )}
-                        {user?.role !== 'ADMIN' && (
-                            <Link to="/settings">
-                                <Button variant="outline" size="sm" className="bg-[hsl(var(--secondary))] h-8 text-[10px] sm:text-sm sm:h-9">
-                                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                                    <span className="hidden xs:inline">{t('dashboard.settings.title')}</span>
-                                </Button>
-                            </Link>
-                        )}
-                        <Button variant="outline" size="sm" onClick={logout} className="bg-[hsl(var(--accent))] h-8 text-[10px] sm:text-sm sm:h-9">
-                            <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                            {t('dashboard.logout')}
-                        </Button>
+                        <UserMenu
+                            user={user}
+                            onLogout={logout}
+                            onOpenFeedback={handleOpenFeedback}
+                            hasUnreadFeedback={hasUnreadFeedback}
+                        />
                     </div>
                 </div>
             </header>
@@ -451,19 +461,19 @@ export default function Dashboard() {
                             </div>
                             {fileStats && (
                                 <div className="grid grid-cols-2 gap-2 text-[10px] font-black uppercase">
-                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between">
+                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between shadow-nb-sm">
                                         <span>{t('dashboard.stats.images')}</span>
                                         <span>{fileStats.images}</span>
                                     </div>
-                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between">
+                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between shadow-nb-sm">
                                         <span>{t('dashboard.stats.videos')}</span>
                                         <span>{fileStats.videos}</span>
                                     </div>
-                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between">
+                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between shadow-nb-sm">
                                         <span>{t('dashboard.stats.audios')}</span>
                                         <span>{fileStats.audios}</span>
                                     </div>
-                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between">
+                                    <div className="bg-white/50 border-2 border-black p-1.5 flex justify-between shadow-nb-sm">
                                         <span>{t('dashboard.stats.others')}</span>
                                         <span>{fileStats.documents + fileStats.others}</span>
                                     </div>
@@ -475,57 +485,59 @@ export default function Dashboard() {
 
                 {/* Files List */}
                 <Card className="bg-white flex flex-col max-h-[700px] overflow-hidden shadow-nb sticky top-[96px]">
-                    <div className="px-4 py-2 bg-gray-50 border-b-2 border-black flex items-center gap-2 overflow-x-auto no-scrollbar">
+                    <div className="px-4 py-2 bg-gray-50 border-b-2 border-black flex items-center flex-wrap gap-2 w-full min-w-0 flex-shrink-0">
                         <button
                             onClick={() => navigateToFolder(null)}
-                            className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 border-2 border-black shadow-nb-sm transition-all ${!currentFolder ? 'bg-[hsl(var(--primary))]' : 'bg-white hover:bg-gray-100'}`}
+                            className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 border-2 border-black shadow-nb-sm transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex-shrink-0 ${!currentFolder ? 'bg-[hsl(var(--primary))]' : 'bg-white hover:bg-gray-100'}`}
                         >
                             ROOT
                         </button>
                         {folderPath.map((folder, index) => (
-                            <div key={folder.id} className="flex items-center gap-2">
+                            <div key={folder.id} className="flex items-center gap-2 flex-shrink-0">
                                 <span className="text-black font-black">/</span>
                                 <button
                                     onClick={() => navigateToFolder(folder, index)}
-                                    className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 border-2 border-black shadow-nb-sm transition-all whitespace-nowrap ${index === folderPath.length - 1 ? 'bg-[hsl(var(--primary))]' : 'bg-white hover:bg-gray-100'}`}
+                                    className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 border-2 border-black shadow-nb-sm transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none truncate max-w-[80px] sx:max-w-[120px] sm:max-w-[200px] ${index === folderPath.length - 1 ? 'bg-[hsl(var(--primary))]' : 'bg-white hover:bg-gray-100'}`}
+                                    title={folder.originalName}
                                 >
                                     {folder.originalName}
                                 </button>
                             </div>
                         ))}
                     </div>
-                    <CardHeader className="border-b-2 border-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-20 bg-white p-4">
-                        <CardTitle className="text-xl sm:text-2xl font-black">
+                    <CardHeader className="border-b-2 border-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-20 bg-white p-4 w-full min-w-0 flex-shrink-0">
+                        <CardTitle className="text-xl sm:text-2xl font-black truncate w-full sm:flex-1 min-w-0" title={currentFolder ? currentFolder.originalName : t('dashboard.files.title')}>
                             {currentFolder ? currentFolder.originalName : t('dashboard.files.title')}
                         </CardTitle>
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className="flex items-center flex-wrap gap-2 w-full sm:w-auto justify-end sm:justify-end py-1">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={loadData}
                                 disabled={isLoading}
-                                className="bg-white hover:bg-black/5 h-8 text-[10px] sm:h-9 sm:text-sm flex-1 sm:flex-none border-2 border-black shadow-nb-sm font-black uppercase"
+                                className="bg-white hover:bg-black/5 h-8 text-[10px] sm:h-9 sm:text-sm flex-none sm:flex-none border-2 border-black shadow-nb-sm font-black uppercase whitespace-nowrap"
                             >
-                                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                                {t('dashboard.actions.refresh')}
+                                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-0 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                                <span className="hidden sm:inline">{t('dashboard.actions.refresh')}</span>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setIsUploadModalOpen(true)}
-                                className="bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.8)] h-8 text-[10px] sm:h-9 sm:text-sm flex-1 sm:flex-none border-2 border-black shadow-nb-sm font-black uppercase text-black"
+                                className="bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.8)] h-8 text-[10px] sm:h-9 sm:text-sm flex-none sm:flex-none border-2 border-black shadow-nb-sm font-black uppercase text-black"
                             >
-                                <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                                {t('dashboard.actions.upload')}
+                                <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-0 sm:mr-2" />
+                                <span className="hidden sm:inline">{t('dashboard.actions.upload')}</span>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setIsCreateFolderModalOpen(true)}
-                                className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/0.8)] h-8 text-[10px] sm:h-9 sm:text-sm flex-1 sm:flex-none border-2 border-black shadow-nb-sm font-black uppercase text-black"
+                                className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/0.8)] h-8 text-[10px] sm:h-9 sm:text-sm flex-none sm:flex-none border-2 border-black shadow-nb-sm font-black uppercase text-black"
                             >
-                                <FolderPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                                {t('dashboard.actions.newFolder')}
+                                <FolderPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-0 sm:mr-2" />
+                                <span className="hidden md:inline">{t('dashboard.actions.newFolder')}</span>
+                                <span className="hidden sm:inline md:hidden">NEW</span>
                             </Button>
                             <div className="hidden sm:block w-[2px] h-6 bg-black/20 mx-1" />
                             <div className="flex items-center gap-2">
@@ -568,16 +580,16 @@ export default function Dashboard() {
                                                 className={`flex items-center justify-between p-5 border-2 border-black bg-white hover:bg-[hsl(var(--primary)/0.1)] transition-all shadow-nb-sm hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-nb ${file.mimeType === 'application/vnd.google-apps.folder' ? 'cursor-pointer' : ''}`}
                                                 onClick={() => file.mimeType === 'application/vnd.google-apps.folder' && handleFolderClick(file)}
                                             >
-                                                <div className="flex items-center gap-5">
-                                                    <span className="text-4xl bg-[hsl(var(--secondary)/0.2)] border-2 border-black p-2 shadow-nb-sm">
+                                                <div className="flex items-center gap-5 min-w-0">
+                                                    <span className="text-4xl bg-[hsl(var(--secondary)/0.2)] border-2 border-black p-2 shadow-nb-sm flex-shrink-0">
                                                         {file.mimeType === 'application/vnd.google-apps.folder' ? (
                                                             <Folder className="w-10 h-10 text-[hsl(var(--primary))]" />
                                                         ) : (
                                                             getFileIcon(file.mimeType)
                                                         )}
                                                     </span>
-                                                    <div>
-                                                        <p className="font-black text-lg tracking-tight truncate max-w-[200px] sm:max-w-md" title={file.originalName}>
+                                                    <div className="min-w-0">
+                                                        <p className="font-black text-lg tracking-tight truncate" title={file.originalName}>
                                                             {file.originalName}
                                                         </p>
                                                         <p className="text-sm font-bold opacity-60">
@@ -706,7 +718,7 @@ export default function Dashboard() {
                                                         </Button>
                                                     </div>
                                                 </div>
-                                                <div className="p-4 flex-grow flex flex-col bg-white">
+                                                <div className="p-4 flex-grow flex flex-col bg-white min-w-0">
                                                     <p className="font-black text-sm tracking-tight mb-1 truncate" title={file.originalName}>
                                                         {file.originalName}
                                                     </p>
@@ -837,10 +849,21 @@ export default function Dashboard() {
             {isCreateFolderModalOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
                     <Card className="w-full max-w-md bg-white shadow-nb border-4 border-black animate-in zoom-in-95 duration-200">
-                        <CardHeader className="border-b-4 border-black bg-[hsl(var(--secondary))]">
+                        <CardHeader className="border-b-4 border-black bg-[hsl(var(--secondary))] flex flex-row items-center justify-between">
                             <CardTitle className="text-xl font-black uppercase text-black">
                                 {t('dashboard.folders.create.title')}
                             </CardTitle>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                    setIsCreateFolderModalOpen(false);
+                                    setNewFolderName('');
+                                }}
+                                className="h-8 w-8 bg-white border-2 border-black shadow-nb-sm hover:translate-y-0.5 hover:shadow-none transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
                         </CardHeader>
                         <form onSubmit={handleCreateFolder}>
                             <CardContent className="p-6">
@@ -894,11 +917,19 @@ export default function Dashboard() {
             {isMoveModalOpen && movingFile && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
                     <Card className="w-full max-w-md bg-white shadow-nb border-4 border-black animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[80vh]">
-                        <CardHeader className="border-b-4 border-black bg-[hsl(var(--primary))]">
+                        <CardHeader className="border-b-4 border-black bg-[hsl(var(--primary))] flex flex-row items-center justify-between">
                             <CardTitle className="text-xl font-black uppercase text-black flex items-center gap-2">
                                 <MoveVertical className="w-5 h-5" />
                                 {t('dashboard.folders.move.title')}
                             </CardTitle>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setIsMoveModalOpen(false)}
+                                className="h-8 w-8 bg-white border-2 border-black shadow-nb-sm hover:translate-y-0.5 hover:shadow-none transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
                         </CardHeader>
 
                         <div className="px-4 py-2 bg-gray-50 border-b-2 border-black flex items-center gap-2 overflow-x-auto no-scrollbar">
@@ -980,12 +1011,12 @@ export default function Dashboard() {
                                 {t('dashboard.actions.uploadTitle')}
                             </CardTitle>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
                                 onClick={() => setIsUploadModalOpen(false)}
-                                className="hover:bg-black/10 text-black border-2 border-transparent hover:border-black transition-all"
+                                className="h-8 w-8 bg-white border-2 border-black shadow-nb-sm hover:translate-y-0.5 hover:shadow-none transition-all"
                             >
-                                <X className="w-6 h-6" />
+                                <X className="w-4 h-4" />
                             </Button>
                         </CardHeader>
                         <CardContent className="p-8">
@@ -1030,11 +1061,22 @@ export default function Dashboard() {
             {isDeleteModalOpen && fileToDelete && (
                 <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
                     <Card className="w-full max-w-md bg-white shadow-nb border-4 border-black animate-in zoom-in-95 duration-200">
-                        <CardHeader className="border-b-4 border-black bg-[hsl(var(--accent))]">
+                        <CardHeader className="border-b-4 border-black bg-[hsl(var(--accent))] flex flex-row items-center justify-between">
                             <CardTitle className="text-xl font-black uppercase text-black flex items-center gap-2">
                                 <Trash2 className="w-5 h-5" />
                                 {t('dashboard.files.delete')}
                             </CardTitle>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    setFileToDelete(null);
+                                }}
+                                className="h-8 w-8 bg-white border-2 border-black shadow-nb-sm hover:translate-y-0.5 hover:shadow-none transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
                         </CardHeader>
                         <CardContent className="p-8 text-center">
                             <div className="w-16 h-16 bg-[hsl(var(--accent)/0.1)] border-2 border-black flex items-center justify-center shadow-nb-sm mb-6 mx-auto rounded-none">
@@ -1068,6 +1110,13 @@ export default function Dashboard() {
                     </Card>
                 </div>
             )}
+            {/* Feedback Components */}
+            <FeedbackUnifiedModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
+                refreshTrigger={feedbackRefreshTrigger}
+                onFeedbackSent={() => setFeedbackRefreshTrigger(prev => prev + 1)}
+            />
         </div>
     );
 }

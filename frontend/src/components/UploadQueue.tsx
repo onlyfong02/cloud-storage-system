@@ -47,25 +47,25 @@ export function UploadQueue() {
                 className="hidden"
                 onChange={handleFileResume}
             />
-            <Card className="border-2 border-black shadow-nb overflow-hidden">
-                <CardHeader className="p-4 border-b-2 border-black bg-[hsl(var(--primary))] flex flex-row items-center justify-between space-y-0">
+            <Card className="border-4 border-black shadow-nb overflow-hidden">
+                <CardHeader className="p-4 border-b-4 border-black bg-[hsl(var(--primary))] flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="text-sm font-black uppercase tracking-tight">
                         {t('dashboard.files.uploads.title', { count: queue.length })}
                         {activeCount > 0 && ` (${activeCount} ${t('dashboard.files.uploads.remaining')})`}
                     </CardTitle>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="icon"
-                            className="h-8 w-8 hover:bg-black/10"
+                            className="h-8 w-8 bg-white border-2 border-black shadow-nb-sm hover:translate-y-0.5 hover:shadow-none transition-all"
                             onClick={() => setIsExpanded(!isExpanded)}
                         >
                             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                         </Button>
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="icon"
-                            className="h-8 w-8 hover:bg-black/10"
+                            className="h-8 w-8 bg-white border-2 border-black shadow-nb-sm hover:translate-y-0.5 hover:shadow-none transition-all"
                             onClick={clearCompleted}
                             title={t('dashboard.files.uploads.clear')}
                         >

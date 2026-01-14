@@ -74,7 +74,7 @@ export default function Settings() {
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link to="/dashboard">
-                            <Button variant="outline" size="icon" className="bg-white border-2 border-black shadow-nb-sm">
+                            <Button variant="outline" size="icon" className="bg-white border-2 border-black">
                                 <ChevronLeft className="w-5 h-5" />
                             </Button>
                         </Link>
@@ -115,14 +115,14 @@ export default function Settings() {
                                             value={shareEmail}
                                             onChange={(e) => setShareEmail(e.target.value)}
                                             placeholder="example@gmail.com"
-                                            className="flex-grow p-4 border-4 border-black shadow-nb-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] font-bold"
+                                            className="flex-grow p-3 border-2 border-black shadow-nb-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))] font-bold"
                                             required
                                             disabled={isSharing}
                                         />
                                         <Button
                                             type="submit"
                                             disabled={isSharing}
-                                            className="bg-[hsl(var(--secondary))] border-4 border-black h-auto py-4 px-8 shadow-nb font-black uppercase text-black hover:bg-[hsl(var(--secondary)/0.8)] disabled:opacity-50"
+                                            className="bg-[hsl(var(--secondary))] border-2 border-black h-auto py-4 px-8 shadow-nb-sm font-black uppercase text-black hover:bg-[hsl(var(--secondary)/0.8)] disabled:opacity-50"
                                         >
                                             {isSharing ? (
                                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -162,7 +162,7 @@ export default function Settings() {
                                                     size="icon"
                                                     onClick={() => handleRemovePermission(perm.id, perm.displayName || perm.emailAddress)}
                                                     disabled={deletingPermissionId === perm.id}
-                                                    className="w-8 h-8 hover:bg-[hsl(var(--destructive))] hover:text-white border-2 border-black shadow-nb-sm"
+                                                    className="w-8 h-8 hover:bg-[hsl(var(--destructive))] hover:text-white border-2 border-black shadow-none active:translate-x-0 active:translate-y-0"
                                                     title={t('dashboard.settings.share.remove')}
                                                 >
                                                     {deletingPermissionId === perm.id ? (

@@ -6,8 +6,8 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (data: LoginRequest) => Promise<void>;
-    register: (data: RegisterRequest) => Promise<void>;
+    login: (data: LoginRequest) => Promise<any>;
+    register: (data: RegisterRequest) => Promise<any>;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('accessToken', response.accessToken);
         localStorage.setItem('refreshToken', response.refreshToken);
         setUser(response.user as User);
+        return response;
     };
 
     const register = async (data: RegisterRequest) => {
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('accessToken', response.accessToken);
         localStorage.setItem('refreshToken', response.refreshToken);
         setUser(response.user as User);
+        return response;
     };
 
     const logout = async () => {

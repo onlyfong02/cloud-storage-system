@@ -2,11 +2,26 @@ import { useEffect, useRef } from 'react';
 import { useUploadStore, type UploadItem } from '@/store/useUploadStore';
 import axios from 'axios';
 import api from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function UploadManager() {
-    const { queue, updateProgress, updateStatus, updateSession, concurrency, isHydrated } = useUploadStore();
+    const { user } = useAuth();
+    const { queue, updateProgress, updateStatus, updateSession, concurrency, isHydrated, clearQueue } = useUploadStore();
     const processingRef = useRef<Set<string>>(new Set());
+    const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
     const initialReviveDone = useRef(false);
+
+    // Clear queue on logout
+    useEffect(() => {
+        if (!user && isHydrated && queue.length > 0) {
+            console.log('[UploadManager] User logged out, clearing upload queue and aborting active uploads');
+            // Abort all active uploads
+            abortControllersRef.current.forEach((controller) => controller.abort());
+            abortControllersRef.current.clear();
+            processingRef.current.clear();
+            clearQueue();
+        }
+    }, [user, isHydrated, queue.length, clearQueue]);
 
     // Reset stuck uploading/paused items once after hydration
     useEffect(() => {
@@ -53,6 +68,9 @@ export function UploadManager() {
         }
         updateStatus(item.id, 'uploading');
 
+        const controller = new AbortController();
+        abortControllersRef.current.set(item.id, controller);
+
         try {
             let sessionUrl = item.sessionUrl;
             let uniqueFileName = item.uniqueFileName;
@@ -66,6 +84,7 @@ export function UploadManager() {
                             'Content-Range': `bytes */${item.file.size}`,
                         },
                         validateStatus: (status) => status === 308 || status === 200 || status === 201,
+                        signal: controller.signal,
                     });
 
                     if (statusResponse.status === 308) {
@@ -90,7 +109,7 @@ export function UploadManager() {
                     size: item.file.size,
                     mimeType: item.file.type || 'application/octet-stream',
                     parentId: item.parentId,
-                });
+                }, { signal: controller.signal });
                 sessionUrl = sessionResponse.data.sessionUrl;
                 uniqueFileName = sessionResponse.data.uniqueFileName;
                 updateSession(item.id, sessionUrl!, uniqueFileName!);
@@ -108,6 +127,7 @@ export function UploadManager() {
                             'Content-Range': `bytes ${startByte}-${endByte - 1}/${item.file.size}`,
                         },
                         timeout: 60000, // 60 seconds timeout per chunk
+                        signal: controller.signal,
                         onUploadProgress: (progressEvent) => {
                             const loaded = startByte + (progressEvent.loaded || 0);
                             const progress = Math.min(Math.round((loaded * 100) / item.file.size), 99);
@@ -127,7 +147,7 @@ export function UploadManager() {
                             size: item.file.size,
                             mimeType: item.file.type || 'application/octet-stream',
                             parentId: item.parentId,
-                        });
+                        }, { signal: controller.signal });
 
                         updateProgress(item.id, 100);
                         updateStatus(item.id, 'completed');
@@ -150,6 +170,10 @@ export function UploadManager() {
                 startByte = endByte;
             }
         } catch (error: any) {
+            if (axios.isCancel(error)) {
+                console.log(`[UploadManager] Upload aborted for ${item.id}`);
+                return;
+            }
             console.error('Upload manager error:', error);
 
             // Auto-retry logic for network errors (status 0 or 5xx)
@@ -165,6 +189,7 @@ export function UploadManager() {
 
             updateStatus(item.id, 'error', error.message || 'Upload failed');
         } finally {
+            abortControllersRef.current.delete(item.id);
             if (retryCount === 0 || !queue.find(i => i.id === item.id && i.status === 'uploading')) {
                 processingRef.current.delete(item.id);
             }

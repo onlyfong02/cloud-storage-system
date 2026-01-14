@@ -339,7 +339,13 @@ export class GoogleDriveService implements OnModuleInit {
                 fileId,
                 fields: 'permissions(id, emailAddress, role, type, displayName)',
             });
-            const result = response.data.permissions?.filter((permission) => permission.emailAddress !== process.env.GOOGLE_DRIVE_WRITER_EMAIL) || [];
+            const writers = process.env.GOOGLE_DRIVE_WRITER_EMAIL?.split(',') || [];
+            const result = (response.data.permissions || []).filter((permission) => {
+                const email = permission.emailAddress;
+                // If email is not present, we keep the permission (e.g., 'anyone' type)
+                // Otherwise, we filter out if it's in the writers list
+                return email ? !writers.includes(email) : true;
+            });
             return result;
         } catch (error) {
             this.logger.error(`Failed to list permissions for file ${fileId}: ${error.message}`, error.stack);
@@ -353,6 +359,18 @@ export class GoogleDriveService implements OnModuleInit {
         }
 
         try {
+            // Fetch permission details to check the email address
+            const permission = await this.drive.permissions.get({
+                fileId,
+                permissionId,
+                fields: 'emailAddress',
+            });
+
+            const writers = process.env.GOOGLE_DRIVE_WRITER_EMAIL?.split(',') || [];
+            if (permission.data.emailAddress && writers.includes(permission.data.emailAddress)) {
+                throw new Error('Cannot remove systematic writer permission');
+            }
+
             await this.drive.permissions.delete({
                 fileId,
                 permissionId,

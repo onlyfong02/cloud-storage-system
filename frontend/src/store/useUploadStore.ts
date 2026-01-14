@@ -27,6 +27,7 @@ interface UploadState {
     clearCompleted: () => void;
     resumeFile: (id: string, file: File) => void;
     retryFile: (id: string) => void;
+    clearQueue: () => void;
 }
 
 // Custom storage for IndexedDB that supports File objects by bypassing JSON.stringify
@@ -94,6 +95,7 @@ export const useUploadStore = create<UploadState>()(
                     item.id === id ? { ...item, status: 'pending' as const, error: undefined } : item
                 ),
             })),
+            clearQueue: () => set({ queue: [] }),
         }),
         {
             name: 'upload-storage',

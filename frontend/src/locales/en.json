@@ -35,6 +35,13 @@
         "title": "Cloud Storage",
         "admin": "Admin",
         "logout": "Logout",
+        "menu": {
+            "label": "SYSTEM MENU",
+            "title": "Account",
+            "dashboard": "Dashboard"
+        },
+        "language": "Language",
+        "about": "About Me",
         "storage": {
             "title": "Storage Capacity",
             "used": "Used: {{used}}",
@@ -175,12 +182,56 @@
                 "role": "Role",
                 "actions": "Actions"
             },
-            "actions": {
-                "remove": "Revoke Access"
-            }
+            "pagination": "Showing {{count}} / {{total}} shared permissions"
+        },
+        "feedback": {
+            "title": "USER FEEDBACK",
+            "noFeedback": "No feedback messages yet",
+            "yourReply": "YOUR REPLY",
+            "replyPlaceholder": "Type your reply here...",
+            "reply": "REPLY",
+            "sendReply": "SEND REPLY",
+            "pagination": "Showing {{count}} / {{total}} feedback messages"
+        }
+    },
+    "feedback": {
+        "title": "FEEDBACK",
+        "message": "YOUR MESSAGE",
+        "placeholder": "Type your feedback here...",
+        "submitSuccess": "Feedback submitted successfully!",
+        "submitFailed": "Failed to submit feedback",
+        "history": "FEEDBACK HISTORY",
+        "noHistory": "No feedback history found",
+        "createFirst": "Send your first feedback to help us improve!",
+        "new": "NEW FEEDBACK",
+        "send": "SEND FEEDBACK",
+        "status": {
+            "pending": "PENDING",
+            "replied": "REPLIED"
+        }
+    },
+    "aboutPage": {
+        "title": "Fong Nguyen & The Fire Profile",
+        "role": "Fullstack Developer",
+        "profileInfo": "A little introduction",
+        "description": "Yah, I'm Fong, full name Nguyen Hai Phong, born in 2002, living in Hanoi, Vietnam. Spent 3 youth years selling my soul to capitalism as a Fullstack Developer (currently adapting to being a Vibe Coder). That's about it, here are my hobbies below hehe. Anyway, thanks for being patient enough to read this far!",
+        "philosophy": "Life Philosophy",
+        "quote": "What's better than a plate of sushi? Two plates of sushi.",
+        "hobbies": {
+            "title": "My Hobbies",
+            "sleep": "Sleep",
+            "matcha": "Matcha",
+            "cat": "Cats",
+            "strawberry": "Strawberries",
+            "game": "Gaming",
+            "music": "Music",
+            "sushi": "Sushi"
         }
     },
     "common": {
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "cancel": "Cancel",
+        "previous": "Previous",
+        "next": "Next"
     }
 }

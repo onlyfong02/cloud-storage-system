@@ -25,9 +25,14 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            await login({ email, password });
+            const response = await login({ email, password });
             toast.success(t('auth.login.success'));
-            navigate('/dashboard');
+
+            if (response.user.role === 'ADMIN') {
+                navigate('/admin');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err: unknown) {
             const error = err as { response?: { data?: { message?: string } } };
             const backendMessage = error.response?.data?.message;

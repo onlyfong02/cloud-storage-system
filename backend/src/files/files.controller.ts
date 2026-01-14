@@ -214,11 +214,15 @@ export class FilesController {
 
     @Get('admin/permissions/all')
     @ApiOperation({ summary: 'Get all shared permissions (Admin only)' })
-    async getAllSharedPermissions(@Request() req) {
+    async getAllSharedPermissions(
+        @Request() req,
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 10,
+    ) {
         if (req.user.role !== 'ADMIN') {
             throw new BadRequestException('Access denied');
         }
-        return this.filesService.getAllSharedPermissions();
+        return this.filesService.getAllSharedPermissions(Number(page), Number(limit));
     }
 
     @Delete('admin/permissions/:ownerId/:permissionId')

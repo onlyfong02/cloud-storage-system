@@ -469,7 +469,7 @@ export class FilesService {
         await this.googleDriveService.removePermission(user.driveFolderId, permissionId);
     }
 
-    async getAllSharedPermissions(): Promise<any[]> {
+    async getAllSharedPermissions(page: number = 1, limit: number = 10): Promise<{ permissions: any[], total: number, totalPages: number }> {
         const users = await this.usersService.findAll();
         const allPermissions: any[] = [];
 
@@ -499,7 +499,15 @@ export class FilesService {
             }
         }
 
-        return allPermissions;
+        const total = allPermissions.length;
+        const skip = (page - 1) * limit;
+        const paginatedPermissions = allPermissions.slice(skip, skip + limit);
+
+        return {
+            permissions: paginatedPermissions,
+            total,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 
     async deleteFile(fileId: string, userId: string): Promise<void> {

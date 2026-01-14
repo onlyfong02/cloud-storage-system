@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { FilesModule } from './files/files.module';
 import { GoogleDriveModule } from './google-drive/google-drive.module';
 import { AdminModule } from './admin/admin.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AdminModule } from './admin/admin.module';
     FilesModule,
     GoogleDriveModule,
     AdminModule,
+    FeedbackModule,
   ],
 })
-export class AppModule { }
+export class AppModule { } 

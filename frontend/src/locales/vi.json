@@ -35,6 +35,13 @@
         "title": "Fong's Cloud Storage System",
         "admin": "Admin",
         "logout": "Đăng xuất",
+        "menu": {
+            "label": "THỰC ĐƠN HỆ THỐNG",
+            "title": "Tài khoản",
+            "dashboard": "Bảng điều khiển"
+        },
+        "language": "Ngôn ngữ",
+        "about": "Về tôi",
         "storage": {
             "title": "Dung lượng lưu trữ",
             "used": "Đã sử dụng: {{used}}",
@@ -174,12 +181,56 @@
                 "role": "Quyền",
                 "actions": "Hành động"
             },
-            "actions": {
-                "remove": "Thu hồi quyền"
-            }
+            "pagination": "Hiển thị {{count}} / {{total}} quyền chia sẻ"
+        },
+        "feedback": {
+            "title": "PHẢN HỒI NGƯỜI DÙNG",
+            "noFeedback": "Chưa có phản hồi nào",
+            "yourReply": "TRẢ LỜI CỦA BẠN",
+            "replyPlaceholder": "Nhập nội dung trả lời...",
+            "reply": "TRẢ LỜI",
+            "sendReply": "GỬI TRẢ LỜI",
+            "pagination": "Hiển thị {{count}} / {{total}} phản hồi"
+        }
+    },
+    "feedback": {
+        "title": "GÓP Ý & BÁO LỖI",
+        "message": "NỘI DUNG",
+        "placeholder": "Nhập nội dung góp ý hoặc báo lỗi...",
+        "submitSuccess": "Gửi phản hồi thành công!",
+        "submitFailed": "Gửi phản hồi thất bại",
+        "history": "LỊCH SỬ PHẢN HỒI",
+        "noHistory": "Bạn chưa gửi phản hồi nào",
+        "createFirst": "Hãy gửi phản hồi đầu tiên để giúp chúng tôi hoàn thiện hơn!",
+        "new": "GỬI GÓP Ý MỚI",
+        "send": "GỬI PHẢN HỒI",
+        "status": {
+            "pending": "CHỜ TRẢ LỜI",
+            "replied": "ĐÃ TRẢ LỜI"
+        }
+    },
+    "aboutPage": {
+        "title": "Fong Nguyen và cái profile siêu bá cháy",
+        "role": "Fullstack Developer",
+        "profileInfo": "Một chút tự giới thiệu",
+        "description": "Yah, tôi là Fong, tên đầy đủ là Nguyễn Hải Phong, sinh năm 2002, sinh sống tại Hà Nội, Việt Nam. Đã dành 3 năm thanh xuân bán mình cho tư bản với tư cách là một Fullstack Developer (hiện đang tập thích nghi làm Vibe Coder). Có vậy thôi, dưới đây là sở thích của mình hê hê. Dù sao thì cảm ơn bạn vì đã kiên nhẫn đọc đến đây!",
+        "philosophy": "Triết lý sống",
+        "quote": "Cái gì ngon hơn một đĩa sushi? Đó là hai đĩa sushi.",
+        "hobbies": {
+            "title": "Sở thích nè",
+            "sleep": "Ngủ",
+            "matcha": "Matcha",
+            "cat": "Mèo",
+            "strawberry": "Dâu tây",
+            "game": "Game",
+            "music": "Nhạc",
+            "sushi": "Sushi"
         }
     },
     "common": {
-        "loading": "Đang tải..."
+        "loading": "Đang tải...",
+        "cancel": "Hủy",
+        "previous": "Trước",
+        "next": "Tiếp"
     }
 }

@@ -1,0 +1,2 @@
+- Quản lý Key API Drive v3 bằng admin thay vì lưu trong .env như hiện tại, phải mã hóa trước khi lưu.
+- Server tự điều phối, chia shard file vào các tài khoản được thêm (tính toàn vẹn dữ liệu).
