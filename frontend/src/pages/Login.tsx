@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Cloud, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -30,9 +30,17 @@ export default function LoginPage() {
             navigate('/dashboard');
         } catch (err: unknown) {
             const error = err as { response?: { data?: { message?: string } } };
-            const message = error.response?.data?.message || t('auth.login.failed');
-            setError(message);
-            toast.error(message);
+            const backendMessage = error.response?.data?.message;
+            let displayMessage = t('auth.login.failed');
+
+            if (backendMessage === 'Incorrect email or password') {
+                displayMessage = t('auth.login.invalidCredentials');
+            } else if (backendMessage) {
+                displayMessage = backendMessage;
+            }
+
+            setError(displayMessage);
+            toast.error(displayMessage);
         } finally {
             setIsLoading(false);
         }
@@ -56,8 +64,14 @@ export default function LoginPage() {
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {error && (
-                            <div className="p-3 border-2 border-black bg-white text-destructive font-bold shadow-nb-sm animate-shake">
-                                {error}
+                            <div className="p-4 border-4 border-black bg-[#ff5c5c] text-black font-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-shake flex items-start gap-4">
+                                <div className="bg-white border-2 border-black p-1 shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                    <AlertCircle className="w-5 h-5 text-black" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-xs uppercase tracking-widest mb-0.5 font-black opacity-90">Attention Required</div>
+                                    <div className="text-sm leading-tight">{error}</div>
+                                </div>
                             </div>
                         )}
                         <div className="space-y-2">
