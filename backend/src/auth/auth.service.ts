@@ -34,12 +34,12 @@ export class AuthService {
         const user = await this.usersService.findByEmailWithPassword(loginDto.email);
 
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Incorrect email or password');
         }
 
         const isPasswordValid = await this.usersService.validatePassword(user, loginDto.password);
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Incorrect email or password');
         }
 
         if (user.status !== UserStatus.ACTIVE) {

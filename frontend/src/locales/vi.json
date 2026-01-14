@@ -2,7 +2,7 @@
     "auth": {
         "login": {
             "title": "Chào mừng",
-            "subtitle": "Đăng nhập vào Cloud Storage của bạn",
+            "subtitle": "Đăng nhập vào Fong's Cloud Storage System",
             "email": "Email",
             "password": "Mật khẩu",
             "submit": "Đăng nhập",
@@ -10,13 +10,14 @@
             "noAccount": "Chưa có tài khoản?",
             "registerNow": "Đăng ký ngay",
             "success": "Đăng nhập thành công",
-            "failed": "Đăng nhập thất bại. Vui lòng thử lại."
+            "failed": "Đăng nhập thất bại. Vui lòng thử lại.",
+            "invalidCredentials": "Sai mật khẩu hoặc tài khoản"
         },
         "register": {
-            "title": "Tham gia",
-            "subtitle": "Tạo tài khoản Cloud Storage mới",
+            "title": "Tham gia với Fong",
+            "subtitle": "Tạo tài khoản Fong's Cloud Storage System",
             "name": "Họ và tên",
-            "namePlaceholder": "Nguyễn Văn A",
+            "namePlaceholder": "Fong Nguyen",
             "email": "Email",
             "password": "Mật khẩu",
             "confirmPassword": "Xác nhận mật khẩu",
@@ -31,7 +32,7 @@
         }
     },
     "dashboard": {
-        "title": "Cloud Storage",
+        "title": "Fong's Cloud Storage System",
         "admin": "Admin",
         "logout": "Đăng xuất",
         "storage": {

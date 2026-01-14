@@ -2,7 +2,7 @@
     "auth": {
         "login": {
             "title": "Welcome",
-            "subtitle": "Login to your Cloud Storage",
+            "subtitle": "Login to Fong's Cloud Storage System",
             "email": "Email",
             "password": "Password",
             "submit": "Login",
@@ -10,13 +10,14 @@
             "noAccount": "Don't have an account?",
             "registerNow": "Register now",
             "success": "Logged in successfully",
-            "failed": "Login failed. Please try again."
+            "failed": "Login failed. Please try again.",
+            "invalidCredentials": "Incorrect email or password"
         },
         "register": {
-            "title": "Join Us",
-            "subtitle": "Create a new Cloud Storage account",
+            "title": "Join With Fong",
+            "subtitle": "Create a new Fong's Cloud Storage System",
             "name": "Full Name",
-            "namePlaceholder": "John Doe",
+            "namePlaceholder": "Fong Nguyen",
             "email": "Email",
             "password": "Password",
             "confirmPassword": "Confirm Password",
