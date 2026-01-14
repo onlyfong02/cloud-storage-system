@@ -469,14 +469,15 @@ export default function Dashboard() {
                                                     ) : (
                                                         getFileIcon(file.mimeType)
                                                     )}
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    {/* Action Overlay - Always visible on mobile, hover on desktop */}
+                                                    <div className="absolute inset-0 bg-black/40 md:opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <Button
                                                             variant="outline"
                                                             size="icon"
                                                             onClick={() => handlePreview(file)}
                                                             className="bg-white hover:bg-[hsl(var(--primary))] border-2 border-black shadow-nb-sm scale-90 group-hover/card:scale-100 transition-transform"
                                                         >
-                                                            <Eye className="w-5 h-5" />
+                                                            <Eye className="w-5 h-5 text-black" />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
@@ -484,7 +485,20 @@ export default function Dashboard() {
                                                             onClick={() => handleDownload(file)}
                                                             className="bg-white hover:bg-[hsl(var(--secondary))] border-2 border-black shadow-nb-sm scale-90 group-hover/card:scale-100 transition-transform"
                                                         >
-                                                            <Download className="w-5 h-5" />
+                                                            <Download className="w-5 h-5 text-black" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={() => handleDelete(file)}
+                                                            disabled={deletingId === file._id}
+                                                            className="bg-white hover:bg-[hsl(var(--destructive))] border-2 border-black shadow-nb-sm scale-90 group-hover/card:scale-100 transition-transform group/del"
+                                                        >
+                                                            {deletingId === file._id ? (
+                                                                <Loader2 className="w-5 h-5 animate-spin text-black" />
+                                                            ) : (
+                                                                <Trash2 className="w-5 h-5 text-black group-hover/del:text-white" />
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -492,34 +506,9 @@ export default function Dashboard() {
                                                     <p className="font-black text-sm uppercase tracking-tight mb-1 truncate" title={file.originalName}>
                                                         {file.originalName}
                                                     </p>
-                                                    <p className="text-[10px] font-bold opacity-60 uppercase mb-4">
+                                                    <p className="text-[10px] font-bold opacity-60 uppercase">
                                                         {formatBytes(file.size)} • {formatDate(file.createdAt)}
                                                     </p>
-                                                    <div className="flex gap-2 mt-auto">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleDownload(file)}
-                                                            className="flex-1 bg-white hover:bg-[hsl(var(--secondary))] text-[10px]"
-                                                        >
-                                                            <Download className="w-3 h-3 mr-1" />
-                                                            DOWN
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleDelete(file)}
-                                                            disabled={deletingId === file._id}
-                                                            className="bg-white hover:bg-[hsl(var(--destructive))] group text-[10px]"
-                                                        >
-                                                            {deletingId === file._id ? (
-                                                                <Loader2 className="w-3 h-3 animate-spin text-black" />
-                                                            ) : (
-                                                                <Trash2 className="w-3 h-3 text-black group-hover:text-white" />
-                                                            )}
-                                                            DEL
-                                                        </Button>
-                                                    </div>
                                                 </div>
                                             </div>
                                         )
