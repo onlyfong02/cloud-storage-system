@@ -176,28 +176,28 @@ export default function Dashboard() {
         <div className="min-h-screen bg-[#f0f0f0] font-bold">
             {/* Header */}
             <header className="border-b-4 border-black bg-white sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm">
-                            <Cloud className="w-6 h-6 text-black" />
+                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm shrink-0">
+                            <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
                         </div>
-                        <div>
-                            <h1 className="font-black text-2xl uppercase tracking-tighter">Fong's Cloud Storage</h1>
-                            <p className="text-sm text-black font-medium">{user?.email}</p>
+                        <div className="min-w-0">
+                            <h1 className="font-black text-lg sm:text-2xl uppercase tracking-tighter truncate">Fong's Cloud Storage</h1>
+                            <p className="text-[10px] sm:text-sm text-black font-medium truncate opacity-60">{user?.email}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                         <LanguageSwitcher />
                         {user?.role === 'ADMIN' && (
                             <Link to="/admin">
-                                <Button variant="outline" size="sm" className="bg-[hsl(var(--secondary))]">
-                                    <Settings className="w-4 h-4 mr-2" />
-                                    {t('dashboard.admin')}
+                                <Button variant="outline" size="sm" className="bg-[hsl(var(--secondary))] h-8 text-[10px] sm:text-sm sm:h-9">
+                                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span className="hidden xs:inline">{t('dashboard.admin')}</span>
                                 </Button>
                             </Link>
                         )}
-                        <Button variant="outline" size="sm" onClick={logout} className="bg-[hsl(var(--accent))]">
-                            <LogOut className="w-4 h-4 mr-2" />
+                        <Button variant="outline" size="sm" onClick={logout} className="bg-[hsl(var(--accent))] h-8 text-[10px] sm:text-sm sm:h-9">
+                            <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                             {t('dashboard.logout')}
                         </Button>
                     </div>
@@ -355,36 +355,38 @@ export default function Dashboard() {
 
                 {/* Files List */}
                 <Card className="bg-white flex flex-col max-h-[700px] overflow-hidden shadow-nb sticky top-[96px]">
-                    <CardHeader className="border-b-2 border-black flex flex-row items-center justify-between sticky top-0 z-20 bg-white">
-                        <CardTitle className="text-2xl font-black uppercase">{t('dashboard.files.title')}</CardTitle>
-                        <div className="flex items-center gap-2">
+                    <CardHeader className="border-b-2 border-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-20 bg-white p-4">
+                        <CardTitle className="text-xl sm:text-2xl font-black uppercase">{t('dashboard.files.title')}</CardTitle>
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={loadData}
                                 disabled={isLoading}
-                                className="bg-white hover:bg-[hsl(var(--primary)/0.2)]"
+                                className="bg-white hover:bg-[hsl(var(--primary)/0.2)] h-8 text-[10px] sm:h-9 sm:text-sm flex-1 sm:flex-none"
                             >
-                                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                                 {t('dashboard.actions.refresh')}
                             </Button>
-                            <div className="w-[2px] h-6 bg-black/20 mx-1" />
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleViewModeChange('grid')}
-                                className={viewMode === 'grid' ? 'bg-[hsl(var(--primary))]' : 'bg-white'}
-                            >
-                                <LayoutGrid className="w-5 h-5" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleViewModeChange('list')}
-                                className={viewMode === 'list' ? 'bg-[hsl(var(--primary))]' : 'bg-white'}
-                            >
-                                <List className="w-5 h-5" />
-                            </Button>
+                            <div className="hidden sm:block w-[2px] h-6 bg-black/20 mx-1" />
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleViewModeChange('grid')}
+                                    className={`w-8 h-8 sm:w-9 sm:h-9 ${viewMode === 'grid' ? 'bg-[hsl(var(--primary))]' : 'bg-white'}`}
+                                >
+                                    <LayoutGrid className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleViewModeChange('list')}
+                                    className={`w-8 h-8 sm:w-9 sm:h-9 ${viewMode === 'list' ? 'bg-[hsl(var(--primary))]' : 'bg-white'}`}
+                                >
+                                    <List className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-6 overflow-y-auto flex-grow">
