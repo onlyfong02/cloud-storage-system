@@ -453,9 +453,9 @@ export default function Dashboard() {
                                         ) : (
                                             <div
                                                 key={file._id || `file-${index}`}
-                                                className="group border-2 border-black bg-white shadow-nb-sm hover:shadow-nb hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all overflow-hidden flex flex-col"
+                                                className="group/card border-2 border-black bg-white shadow-nb-sm hover:shadow-nb hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all overflow-hidden flex flex-col"
                                             >
-                                                <div className="h-40 bg-[hsl(var(--secondary)/0.1)] border-b-2 border-black flex items-center justify-center text-6xl group-hover:bg-[hsl(var(--primary)/0.2)] transition-colors relative overflow-hidden">
+                                                <div className="h-40 bg-[hsl(var(--secondary)/0.1)] border-b-2 border-black flex items-center justify-center text-6xl group-hover/card:bg-[hsl(var(--primary)/0.2)] transition-colors relative overflow-hidden">
                                                     {file.thumbnailLink ? (
                                                         <img
                                                             src={file.thumbnailLink}
@@ -469,12 +469,12 @@ export default function Dashboard() {
                                                     ) : (
                                                         getFileIcon(file.mimeType)
                                                     )}
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <Button
                                                             variant="outline"
                                                             size="icon"
                                                             onClick={() => handlePreview(file)}
-                                                            className="bg-white hover:bg-[hsl(var(--primary))] border-2 border-black shadow-nb-sm scale-90 group-hover:scale-100 transition-transform"
+                                                            className="bg-white hover:bg-[hsl(var(--primary))] border-2 border-black shadow-nb-sm scale-90 group-hover/card:scale-100 transition-transform"
                                                         >
                                                             <Eye className="w-5 h-5" />
                                                         </Button>
@@ -482,7 +482,7 @@ export default function Dashboard() {
                                                             variant="outline"
                                                             size="icon"
                                                             onClick={() => handleDownload(file)}
-                                                            className="bg-white hover:bg-[hsl(var(--secondary))] border-2 border-black shadow-nb-sm scale-90 group-hover:scale-100 transition-transform"
+                                                            className="bg-white hover:bg-[hsl(var(--secondary))] border-2 border-black shadow-nb-sm scale-90 group-hover/card:scale-100 transition-transform"
                                                         >
                                                             <Download className="w-5 h-5" />
                                                         </Button>
