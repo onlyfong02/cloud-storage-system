@@ -225,7 +225,7 @@ export default function Dashboard() {
             link.click();
             document.body.removeChild(link);
 
-            toast.success(t('dashboard.files.downloadSuccess'));
+            toast.info(t('dashboard.files.downloadSuccess'));
         } finally {
             // Small delay to show the loading state
             setTimeout(() => setDownloadingId(null), 1000);
