@@ -109,7 +109,7 @@
             "uploadSuccess": "Tải lên thành công: {{name}}",
             "uploadFailed": "Tải lên thất bại",
             "downloading": "Đang chuẩn bị tải xuống: {{name}}...",
-            "downloadSuccess": "Tải xuống thành công",
+            "downloadSuccess": "Đang chuẩn bị tải xuống",
             "downloadFailed": "Tải xuống thất bại",
             "deleting": "Đang xóa file: {{name}}...",
             "previewUnavailable": "Không có bản xem trước cho file này",

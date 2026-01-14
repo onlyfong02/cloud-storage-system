@@ -110,7 +110,7 @@
             "uploadSuccess": "Uploaded successfully: {{name}}",
             "uploadFailed": "Upload failed",
             "downloading": "Preparing download: {{name}}...",
-            "downloadSuccess": "Downloaded successfully",
+            "downloadSuccess": "Preparing download",
             "downloadFailed": "Download failed",
             "deleting": "Deleting file: {{name}}...",
             "previewUnavailable": "Preview unavailable for this file",
