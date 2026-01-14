@@ -860,9 +860,14 @@ export default function Dashboard() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleDownload(previewFile)}
+                                    disabled={downloadingId === previewFile.id}
                                     className="bg-[hsl(var(--secondary))] border-2 border-black shadow-nb-sm"
                                 >
-                                    <Download className="w-4 h-4 mr-2" />
+                                    {downloadingId === previewFile.id ? (
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                    ) : (
+                                        <Download className="w-4 h-4 mr-2" />
+                                    )}
                                     {t('dashboard.files.download')}
                                 </Button>
                             </div>
