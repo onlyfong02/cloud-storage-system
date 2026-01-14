@@ -143,15 +143,46 @@ export class FilesController {
         @Request() req,
         @Res() res: any,
     ) {
-        const { stream, mimeType, fileName } = await this.filesService.downloadFile(
-            id,
-            req.user.userId,
-        );
+        const range = req.headers.range;
 
-        res.setHeader('Content-Type', mimeType);
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        if (range) {
+            const { stream, mimeType, fileName, size } = await this.filesService.downloadFile(
+                id,
+                req.user.userId,
+                range,
+            );
 
-        stream.pipe(res);
+            // Parse range to set correct headers
+            // Range format: bytes=start-end
+            const parts = range.replace(/bytes=/, "").split("-");
+            if (parts.length > 0) {
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : size - 1;
+                const chunksize = (end - start) + 1;
+
+                res.status(206);
+                res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+                res.setHeader('Accept-Ranges', 'bytes');
+                res.setHeader('Content-Length', chunksize);
+            }
+
+            res.setHeader('Content-Type', mimeType);
+            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+
+            stream.pipe(res);
+        } else {
+            const { stream, mimeType, fileName, size } = await this.filesService.downloadFile(
+                id,
+                req.user.userId,
+            );
+
+            res.setHeader('Content-Type', mimeType);
+            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+            res.setHeader('Content-Length', size);
+            res.setHeader('Accept-Ranges', 'bytes');
+
+            stream.pipe(res);
+        }
     }
 
     @Get(':id/view')

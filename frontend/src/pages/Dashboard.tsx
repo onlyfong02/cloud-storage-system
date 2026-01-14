@@ -43,6 +43,7 @@ export default function Dashboard() {
     } | null>(null);
     const { addFiles, queue } = useUploadStore();
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [downloadingId, setDownloadingId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
     const [pageSize, setPageSize] = useState(12);
     const [isDragging, setIsDragging] = useState(false);
@@ -206,13 +207,28 @@ export default function Dashboard() {
     };
 
     const handleDownload = async (file: FileMetadata) => {
-        const toastId = toast.loading(t('dashboard.files.downloading', { name: file.originalName }));
+        if (file.mimeType === 'application/vnd.google-apps.folder') {
+            return;
+        }
+
+        setDownloadingId(file.id);
         try {
-            await fileService.downloadFile(file.id, file.originalName);
-            toast.success(t('dashboard.files.downloadSuccess'), { id: toastId });
-        } catch (error) {
-            console.error('Download failed:', error);
-            toast.error(t('dashboard.files.downloadFailed'), { id: toastId });
+            const baseUrl = import.meta.env.VITE_API_URL || '';
+            const token = localStorage.getItem('accessToken');
+            const downloadUrl = `${baseUrl}/files/${file.id}/download?token=${token}`;
+
+            // Create a temporary link and click it to trigger native browser download
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', file.originalName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast.success(t('dashboard.files.downloadSuccess'));
+        } finally {
+            // Small delay to show the loading state
+            setTimeout(() => setDownloadingId(null), 1000);
         }
     };
 
@@ -613,10 +629,15 @@ export default function Dashboard() {
                                                                 variant="outline"
                                                                 size="icon"
                                                                 onClick={() => handleDownload(file)}
+                                                                disabled={downloadingId === file.id}
                                                                 title={t('dashboard.files.download')}
                                                                 className="bg-white hover:bg-[hsl(var(--secondary))]"
                                                             >
-                                                                <Download className="w-5 h-5 text-black" />
+                                                                {downloadingId === file.id ? (
+                                                                    <Loader2 className="w-5 h-5 animate-spin text-black" />
+                                                                ) : (
+                                                                    <Download className="w-5 h-5 text-black" />
+                                                                )}
                                                             </Button>
                                                         </>
                                                     )}
@@ -689,9 +710,14 @@ export default function Dashboard() {
                                                                     variant="outline"
                                                                     size="icon"
                                                                     onClick={() => handleDownload(file)}
+                                                                    disabled={downloadingId === file.id}
                                                                     className="bg-white hover:bg-[hsl(var(--secondary))] border-2 border-black shadow-nb-sm scale-90 group-hover/card:scale-100 transition-transform"
                                                                 >
-                                                                    <Download className="w-5 h-5 text-black" />
+                                                                    {downloadingId === file.id ? (
+                                                                        <Loader2 className="w-5 h-5 animate-spin text-black" />
+                                                                    ) : (
+                                                                        <Download className="w-5 h-5 text-black" />
+                                                                    )}
                                                                 </Button>
                                                             </>
                                                         )}

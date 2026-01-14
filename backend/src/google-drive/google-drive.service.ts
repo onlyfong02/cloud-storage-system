@@ -157,25 +157,41 @@ export class GoogleDriveService implements OnModuleInit {
         };
     }
 
-    async downloadFile(fileId: string): Promise<{ stream: Readable; mimeType: string; name: string }> {
+    async downloadFile(fileId: string, range?: string): Promise<{ stream: Readable; mimeType: string; name: string; size: number }> {
         if (!this.drive) {
             throw new Error('Google Drive service not initialized');
         }
 
         const fileMetadata = await this.drive.files.get({
             fileId,
-            fields: 'name, mimeType',
+            fields: 'name, mimeType, size',
         });
 
+        const requestOptions: any = {
+            fileId,
+            alt: 'media',
+        };
+
+        const axiosOptions: any = {
+            responseType: 'stream',
+        };
+
+        if (range) {
+            axiosOptions.headers = {
+                Range: range,
+            };
+        }
+
         const response = await this.drive.files.get(
-            { fileId, alt: 'media' },
-            { responseType: 'stream' },
+            requestOptions,
+            axiosOptions,
         );
 
         return {
             stream: response.data as Readable,
             mimeType: fileMetadata.data.mimeType || 'application/octet-stream',
             name: fileMetadata.data.name || 'unknown',
+            size: parseInt(fileMetadata.data.size || '0'),
         };
     }
 

@@ -420,15 +420,16 @@ export class FilesService {
         return file;
     }
 
-    async downloadFile(fileId: string, userId: string) {
+    async downloadFile(fileId: string, userId: string, range?: string) {
         const file = await this.getFileById(fileId, userId);
 
-        const driveFile = await this.googleDriveService.downloadFile(file.driveFileId);
+        const driveFile = await this.googleDriveService.downloadFile(file.driveFileId, range);
 
         return {
             stream: driveFile.stream,
             mimeType: file.mimeType,
             fileName: file.originalName,
+            size: driveFile.size,
         };
     }
 

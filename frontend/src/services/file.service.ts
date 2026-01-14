@@ -122,6 +122,41 @@ export const fileService = {
         window.URL.revokeObjectURL(url);
     },
 
+    downloadFileChunked: async (fileId: string, fileName: string, totalSize: number, onProgress?: (progress: number) => void): Promise<void> => {
+        const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks
+        const chunks: Blob[] = [];
+        let downloadedBytes = 0;
+
+        for (let start = 0; start < totalSize; start += CHUNK_SIZE) {
+            const end = Math.min(start + CHUNK_SIZE - 1, totalSize - 1);
+            const range = `bytes=${start}-${end}`;
+
+            const response = await api.get(`/files/${fileId}/download`, {
+                headers: {
+                    Range: range,
+                },
+                responseType: 'blob',
+            });
+
+            chunks.push(response.data);
+            downloadedBytes += (end - start) + 1;
+
+            if (onProgress) {
+                onProgress(Math.round((downloadedBytes / totalSize) * 100));
+            }
+        }
+
+        const finalBlob = new Blob(chunks);
+        const url = window.URL.createObjectURL(finalBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    },
+
     deleteFile: async (fileId: string): Promise<void> => {
         await api.delete(`/files/${fileId}`);
     },
