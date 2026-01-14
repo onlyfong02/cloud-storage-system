@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import { Readable } from 'stream';
 import { FileMetadata, FileMetadataDocument } from './schemas/file.schema';
 import { GoogleDriveService } from '../google-drive/google-drive.service';
 import { UsersService } from '../users/users.service';
@@ -22,7 +23,7 @@ export class FilesService {
         private usersService: UsersService,
     ) { }
 
-    async uploadFile(userId: string, file: Express.Multer.File): Promise<FileMetadataDocument> {
+    async uploadFile(userId: string, file: Express.Multer.File, parentId?: string): Promise<FileMetadataDocument> {
         // Check if Google Drive is initialized
         if (!this.googleDriveService.isInitialized()) {
             throw new BadRequestException('Google Drive service is not configured');
@@ -38,11 +39,22 @@ export class FilesService {
             );
         }
 
-        // Get or create user folder
-        let folderId = user.driveFolderId;
-        if (!folderId) {
-            folderId = await this.googleDriveService.createUserFolder(userId, user.email);
-            await this.usersService.updateDriveFolderId(userId, folderId);
+        // Determine destination folder ID on Google Drive
+        let destinationDriveFolderId: string;
+        if (parentId) {
+            const parentFolder = await this.fileModel.findById(parentId);
+            if (!parentFolder || parentFolder.ownerId.toString() !== userId) {
+                throw new NotFoundException('Parent folder not found');
+            }
+            destinationDriveFolderId = parentFolder.driveFileId;
+        } else {
+            // Get or create user root folder if not exists
+            let rootFolderId = user.driveFolderId;
+            if (!rootFolderId) {
+                rootFolderId = await this.googleDriveService.createUserFolder(userId, user.email);
+                await this.usersService.updateDriveFolderId(userId, rootFolderId);
+            }
+            destinationDriveFolderId = rootFolderId;
         }
 
         // Generate unique filename
@@ -50,7 +62,7 @@ export class FilesService {
         const uniqueFileName = `${uuidv4()}.${fileExtension}`;
 
         // Upload to Google Drive
-        const driveFile = await this.googleDriveService.uploadFile(file, folderId, uniqueFileName);
+        const driveFile = await this.googleDriveService.uploadFile(file, destinationDriveFolderId, uniqueFileName);
 
         // Save metadata to database
         const fileMetadata = new this.fileModel({
@@ -62,6 +74,7 @@ export class FilesService {
             mimeType: file.mimetype,
             thumbnailLink: driveFile['thumbnailLink'],
             webViewLink: driveFile['webViewLink'],
+            parentId: parentId ? new Types.ObjectId(parentId) : null,
         });
 
         const savedFile = await fileMetadata.save();
@@ -69,7 +82,7 @@ export class FilesService {
         // Update user's used storage
         await this.usersService.updateUsedStorage(userId, file.size);
 
-        this.logger.log(`File uploaded: ${file.originalname} for user ${userId}`);
+        this.logger.log(`File uploaded: ${file.originalname} (Parent: ${parentId || 'root'}) for user ${userId}`);
 
         return savedFile;
     }
@@ -80,6 +93,7 @@ export class FilesService {
         size: number,
         mimeType: string,
         origin?: string,
+        parentId?: string,
     ): Promise<{ sessionUrl: string; uniqueFileName: string }> {
         if (!this.googleDriveService.isInitialized()) {
             throw new BadRequestException('Google Drive service is not configured');
@@ -94,17 +108,29 @@ export class FilesService {
             );
         }
 
-        let folderId = user.driveFolderId;
-        if (!folderId) {
-            folderId = await this.googleDriveService.createUserFolder(userId, user.email);
-            await this.usersService.updateDriveFolderId(userId, folderId);
+        // Determine destination folder ID on Google Drive
+        let destinationDriveFolderId: string;
+        if (parentId) {
+            const parentFolder = await this.fileModel.findById(parentId);
+            if (!parentFolder || parentFolder.ownerId.toString() !== userId) {
+                throw new NotFoundException('Parent folder not found');
+            }
+            destinationDriveFolderId = parentFolder.driveFileId;
+        } else {
+            // Get or create user root folder if not exists
+            let rootFolderId = user.driveFolderId;
+            if (!rootFolderId) {
+                rootFolderId = await this.googleDriveService.createUserFolder(userId, user.email);
+                await this.usersService.updateDriveFolderId(userId, rootFolderId);
+            }
+            destinationDriveFolderId = rootFolderId;
         }
 
         const fileExtension = fileName.split('.').pop();
         const uniqueFileName = `${uuidv4()}.${fileExtension}`;
 
         const sessionUrl = await this.googleDriveService.initiateResumableUpload(
-            folderId,
+            destinationDriveFolderId,
             uniqueFileName,
             mimeType,
             size,
@@ -121,6 +147,7 @@ export class FilesService {
         fileName: string,
         size: number,
         mimeType: string,
+        parentId?: string,
     ): Promise<FileMetadataDocument> {
         this.logger.log(`[FilesService] Starting completeDirectUpload for user: ${userId}, file: ${originalName}, driveId: ${driveFileId}`);
 
@@ -148,6 +175,7 @@ export class FilesService {
                 mimeType,
                 thumbnailLink: driveFile.thumbnailLink,
                 webViewLink: driveFile.webViewLink,
+                parentId: parentId ? new Types.ObjectId(parentId) : null,
             });
 
             this.logger.log(`[FilesService] Saving file metadata to database...`);
@@ -164,19 +192,89 @@ export class FilesService {
         }
     }
 
-    async getUserFiles(userId: string, page: number = 1, limit: number = 10): Promise<{ files: FileMetadataDocument[]; total: number }> {
+    async createFolder(userId: string, folderName: string, parentId?: string): Promise<FileMetadataDocument> {
+        if (!this.googleDriveService.isInitialized()) {
+            throw new BadRequestException('Google Drive service is not configured');
+        }
+
+        const user = await this.usersService.findById(userId);
+
+        // Determine destination folder ID on Google Drive
+        let destinationDriveFolderId: string;
+        if (parentId) {
+            const parentFolder = await this.fileModel.findById(parentId);
+            if (!parentFolder || parentFolder.ownerId.toString() !== userId) {
+                throw new NotFoundException('Parent folder not found');
+            }
+            destinationDriveFolderId = parentFolder.driveFileId;
+        } else {
+            // Get or create user root folder if not exists
+            let rootFolderId = user.driveFolderId;
+            if (!rootFolderId) {
+                rootFolderId = await this.googleDriveService.createUserFolder(userId, user.email);
+                await this.usersService.updateDriveFolderId(userId, rootFolderId);
+            }
+            destinationDriveFolderId = rootFolderId;
+        }
+
+        // Create folder on Google Drive
+        const driveFolder = await this.googleDriveService.createFolder(folderName, destinationDriveFolderId);
+
+        // Save metadata to database
+        const folderMetadata = new this.fileModel({
+            driveFileId: driveFolder.id,
+            ownerId: new Types.ObjectId(userId),
+            originalName: folderName,
+            fileName: folderName,
+            size: 0,
+            mimeType: 'application/vnd.google-apps.folder',
+            parentId: parentId ? new Types.ObjectId(parentId) : null,
+        });
+
+        const savedFolder = await folderMetadata.save();
+
+        this.logger.log(`Folder created: ${folderName} (Parent: ${parentId || 'root'}) for user ${userId}`);
+
+        return savedFolder;
+    }
+
+    async getUserFiles(
+        userId: string,
+        page: number = 1,
+        limit: number = 10,
+        parentId?: string,
+    ): Promise<{ files: FileMetadataDocument[]; total: number }> {
         const skip = (page - 1) * limit;
+
+        const query: any = { ownerId: new Types.ObjectId(userId) };
+
+        if (parentId) {
+            query.parentId = new Types.ObjectId(parentId);
+        } else {
+            query.parentId = { $in: [null, undefined] }; // Files in the root
+        }
+
         const [files, total] = await Promise.all([
             this.fileModel
-                .find({ ownerId: new Types.ObjectId(userId) })
+                .find(query)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .exec(),
-            this.fileModel.countDocuments({ ownerId: new Types.ObjectId(userId) }),
+            this.fileModel.countDocuments(query),
         ]);
 
         return { files, total };
+    }
+
+    async getFileStream(fileId: string, userId: string): Promise<{ stream: Readable; mimeType: string }> {
+        const file = await this.getFileById(fileId, userId);
+        return this.googleDriveService.getFileStream(file.driveFileId);
+    }
+
+    async getThumbnail(fileId: string, userId: string): Promise<{ stream: Readable; mimeType: string }> {
+        const file = await this.getFileById(fileId, userId);
+        return this.googleDriveService.getThumbnail(file.driveFileId);
     }
 
     async getFileStats(userId: string): Promise<{
@@ -193,7 +291,12 @@ export class FilesService {
         othersSize: number;
     }> {
         const stats = await this.fileModel.aggregate([
-            { $match: { ownerId: new Types.ObjectId(userId) } },
+            {
+                $match: {
+                    ownerId: new Types.ObjectId(userId),
+                    mimeType: { $ne: 'application/vnd.google-apps.folder' },
+                },
+            },
             {
                 $group: {
                     _id: null,
@@ -329,19 +432,160 @@ export class FilesService {
         };
     }
 
+    async shareRootFolder(userId: string, email: string): Promise<void> {
+        const user = await this.usersService.findById(userId);
+        if (!user || !user.driveFolderId) {
+            throw new BadRequestException('User root folder not found');
+        }
+
+        await this.googleDriveService.shareFile(user.driveFolderId, email, 'reader');
+        this.logger.log(`Shared root folder of user ${userId} with ${email}`);
+    }
+
+    async getRootFolderPermissions(userId: string): Promise<any[]> {
+        const user = await this.usersService.findById(userId);
+        if (!user || !user.driveFolderId) {
+            throw new BadRequestException('User root folder not found');
+        }
+
+        return this.googleDriveService.getPermissions(user.driveFolderId);
+    }
+
+    async removeRootFolderPermission(userId: string, permissionId: string): Promise<void> {
+        const user = await this.usersService.findById(userId);
+        if (!user || !user.driveFolderId) {
+            throw new BadRequestException('User root folder not found');
+        }
+
+        await this.googleDriveService.removePermission(user.driveFolderId, permissionId);
+    }
+
+    async removeUserRootFolderPermission(ownerId: string, permissionId: string): Promise<void> {
+        const user = await this.usersService.findById(ownerId);
+        if (!user || !user.driveFolderId) {
+            throw new BadRequestException('User root folder not found');
+        }
+
+        await this.googleDriveService.removePermission(user.driveFolderId, permissionId);
+    }
+
+    async getAllSharedPermissions(): Promise<any[]> {
+        const users = await this.usersService.findAll();
+        const allPermissions: any[] = [];
+
+        for (const user of users) {
+            if (user.driveFolderId) {
+                try {
+                    const permissions = await this.googleDriveService.getPermissions(user.driveFolderId);
+                    const sharedPermissions = permissions.filter(p => p.role !== 'owner'); // Exclude owner
+
+                    if (sharedPermissions.length > 0) {
+                        allPermissions.push(...sharedPermissions.map(p => ({
+                            permissionId: p.id,
+                            email: p.emailAddress,
+                            role: p.role,
+                            owner: {
+                                id: user._id,
+                                name: user.name,
+                                email: user.email,
+                                driveFolderId: user.driveFolderId
+                            }
+                        })));
+                    }
+                } catch (error) {
+                    this.logger.warn(`Failed to fetch permissions for user ${user.email}: ${error.message}`);
+                    // Continue to next user
+                }
+            }
+        }
+
+        return allPermissions;
+    }
+
     async deleteFile(fileId: string, userId: string): Promise<void> {
         const file = await this.getFileById(fileId, userId);
 
-        // Delete from Google Drive
-        await this.googleDriveService.deleteFile(file.driveFileId);
+        if (file.mimeType === 'application/vnd.google-apps.folder') {
+            await this.deleteFolderRecursive(file, userId);
+        } else {
+            // Delete from Google Drive
+            await this.googleDriveService.deleteFile(file.driveFileId);
 
-        // Update user's used storage
-        await this.usersService.updateUsedStorage(userId, -file.size);
+            // Update user's used storage
+            await this.usersService.updateUsedStorage(userId, -file.size);
 
-        // Delete metadata from database
-        await this.fileModel.findByIdAndDelete(fileId);
+            // Delete metadata from database
+            await this.fileModel.findByIdAndDelete(fileId);
+        }
 
         this.logger.log(`File deleted: ${file.originalName} for user ${userId}`);
+    }
+
+    private async deleteFolderRecursive(folder: FileMetadataDocument, userId: string): Promise<void> {
+        // Find all children
+        const children = await this.fileModel.find({ parentId: folder._id });
+
+        for (const child of children) {
+            if (child.mimeType === 'application/vnd.google-apps.folder') {
+                await this.deleteFolderRecursive(child, userId);
+            } else {
+                // Delete child file from Google Drive
+                await this.googleDriveService.deleteFile(child.driveFileId);
+                // Update storage for child file
+                await this.usersService.updateUsedStorage(userId, -child.size);
+                // Delete child metadata
+                await this.fileModel.findByIdAndDelete(child._id);
+            }
+        }
+
+        // After deleting all children, delete the folder itself
+        await this.googleDriveService.deleteFile(folder.driveFileId);
+        await this.fileModel.findByIdAndDelete(folder._id);
+    }
+
+    async moveFile(userId: string, fileId: string, targetFolderId?: string): Promise<FileMetadataDocument> {
+        const file = await this.getFileById(fileId, userId);
+
+        let targetDriveFolderId: string;
+        let oldParentDriveFolderId: string;
+
+        // Get current parent drive folder ID
+        if (file.parentId) {
+            const oldParent = await this.fileModel.findById(file.parentId);
+            if (!oldParent) {
+                throw new NotFoundException('Current parent folder not found');
+            }
+            oldParentDriveFolderId = oldParent.driveFileId;
+        } else {
+            const user = await this.usersService.findById(userId);
+            oldParentDriveFolderId = user.driveFolderId;
+        }
+
+        // Get target drive folder ID
+        if (targetFolderId) {
+            if (targetFolderId === file._id.toString()) {
+                throw new BadRequestException('Cannot move a folder into itself');
+            }
+            const targetFolder = await this.fileModel.findById(targetFolderId);
+            if (!targetFolder || targetFolder.mimeType !== 'application/vnd.google-apps.folder') {
+                throw new BadRequestException('Target is not a valid folder');
+            }
+            targetDriveFolderId = targetFolder.driveFileId;
+        } else {
+            const user = await this.usersService.findById(userId);
+            targetDriveFolderId = user.driveFolderId;
+        }
+
+        // Move on Google Drive
+        await this.googleDriveService.moveFile(file.driveFileId, oldParentDriveFolderId, targetDriveFolderId);
+
+        // Update database
+        file.parentId = targetFolderId ? new Types.ObjectId(targetFolderId) : undefined;
+        const updatedFile = await file.save();
+
+        this.logger.log(`File ${file.originalName} moved to ${targetFolderId || 'root'} by user ${userId}`);
+
+        return updatedFile;
     }
 
     private formatBytes(bytes: number): string {

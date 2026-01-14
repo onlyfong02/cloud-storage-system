@@ -89,6 +89,7 @@ export function UploadManager() {
                     fileName: item.file.name,
                     size: item.file.size,
                     mimeType: item.file.type || 'application/octet-stream',
+                    parentId: item.parentId,
                 });
                 sessionUrl = sessionResponse.data.sessionUrl;
                 uniqueFileName = sessionResponse.data.uniqueFileName;
@@ -125,6 +126,7 @@ export function UploadManager() {
                             fileName: uniqueFileName,
                             size: item.file.size,
                             mimeType: item.file.type || 'application/octet-stream',
+                            parentId: item.parentId,
                         });
 
                         updateProgress(item.id, 100);

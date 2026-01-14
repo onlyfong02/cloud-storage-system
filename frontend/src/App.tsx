@@ -7,6 +7,7 @@ import LoginPage from '@/pages/Login';
 import RegisterPage from '@/pages/Register';
 import Dashboard from '@/pages/Dashboard';
 import AdminPage from '@/pages/Admin';
+import SettingsPage from '@/pages/Settings';
 import { UploadManager } from './components/UploadManager';
 
 function App() {
@@ -46,6 +47,14 @@ function App() {
             element={
               <ProtectedRoute requireAdmin>
                 <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

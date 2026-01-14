@@ -54,10 +54,33 @@
             "audios": "Audio",
             "others": "Others"
         },
+        "folders": {
+            "create": {
+                "title": "Create New Folder",
+                "placeholder": "Folder name",
+                "submit": "Create",
+                "cancel": "Cancel",
+                "success": "Folder created successfully",
+                "failed": "Failed to create folder"
+            },
+            "move": {
+                "title": "Move Item",
+                "selectTarget": "Select destination folder",
+                "moveHere": "Move Here",
+                "cancel": "Cancel",
+                "success": "Moved successfully",
+                "failed": "Failed to move item",
+                "root": "Root Folder",
+                "cannotMoveToSelf": "Cannot move a folder into itself",
+                "moving": "Moving..."
+            }
+        },
         "actions": {
-            "upload": "UPLOAD FILE",
+            "uploadTitle": "UPLOAD FILES",
+            "upload": "UPLOAD",
             "uploading": "UPLOADING... {{progress}}%",
             "refresh": "REFRESH",
+            "newFolder": "NEW FOLDER",
             "uploadHint": "Click to select or drag and drop files here"
         },
         "files": {
@@ -66,6 +89,7 @@
             "download": "Download",
             "preview": "Preview",
             "delete": "Delete",
+            "move": "Move",
             "uploads": {
                 "title": "Upload Queue ({{count}})",
                 "remaining": "remaining",
@@ -88,6 +112,20 @@
             "pagination": "Showing {{count}} / {{total}} files",
             "page": "PAGE {{current}} / {{total}}",
             "perPage": "per page"
+        },
+        "settings": {
+            "title": "Settings",
+            "share": {
+                "title": "Access Sharing",
+                "note": "Note",
+                "description": "To enable image previews, you need to share 'Reader' access with the email address you use to sign into Google on this browser.",
+                "details": "This will share your root folder on Google Drive. Once shared, Google will allow images to be displayed via link previews.",
+                "emailLabel": "Enter Google Email",
+                "submit": "Share Now",
+                "sharedList": "Shared List",
+                "noShares": "No shared users",
+                "remove": "Remove Access"
+            }
         }
     },
     "admin": {
@@ -127,7 +165,20 @@
             "pagination": "Showing {{count}} / {{total}} users",
             "page": "PAGE {{current}} / {{total}}"
         },
-        "noAccess": "Access Denied"
+        "noAccess": "Access Denied",
+        "permissions": {
+            "title": "SHARED ACCESS MANAGEMENT",
+            "noShares": "No shared data in the system",
+            "table": {
+                "owner": "Owner",
+                "sharedWith": "Shared With",
+                "role": "Role",
+                "actions": "Actions"
+            },
+            "actions": {
+                "remove": "Revoke Access"
+            }
+        }
     },
     "common": {
         "loading": "Loading..."

@@ -2,7 +2,7 @@ import axios from 'axios';
 import api from './api';
 
 export interface FileMetadata {
-    _id: string;
+    id: string;
     driveFileId: string;
     ownerId: string;
     originalName: string;
@@ -12,12 +12,13 @@ export interface FileMetadata {
     createdAt: string;
     thumbnailLink?: string;
     webViewLink?: string;
+    parentId?: string;
 }
 
 export const fileService = {
-    getFiles: async (page: number = 1, limit: number = 10): Promise<{ files: FileMetadata[]; total: number }> => {
+    getFiles: async (page: number = 1, limit: number = 10, parentId?: string): Promise<{ files: FileMetadata[]; total: number }> => {
         const response = await api.get('/files', {
-            params: { page, limit },
+            params: { page, limit, parentId },
         });
         return response.data;
     },
@@ -39,13 +40,14 @@ export const fileService = {
         return response.data;
     },
 
-    uploadFile: async (file: File, onProgress?: (progress: number) => void): Promise<FileMetadata> => {
+    uploadFile: async (file: File, parentId?: string, onProgress?: (progress: number) => void): Promise<FileMetadata> => {
         try {
             // Step 1: Create upload session
             const sessionResponse = await api.post('/files/upload/session', {
                 fileName: file.name,
                 size: file.size,
                 mimeType: file.type || 'application/octet-stream',
+                parentId,
             });
 
             const { sessionUrl, uniqueFileName } = sessionResponse.data;
@@ -91,6 +93,7 @@ export const fileService = {
                 fileName: uniqueFileName,
                 size: file.size,
                 mimeType: file.type || 'application/octet-stream',
+                parentId,
             });
 
             return completeResponse.data;
@@ -121,5 +124,25 @@ export const fileService = {
 
     deleteFile: async (fileId: string): Promise<void> => {
         await api.delete(`/files/${fileId}`);
+    },
+
+    createFolder: async (name: string, parentId?: string): Promise<FileMetadata> => {
+        const response = await api.post('/files/folder', { name, parentId });
+        return response.data;
+    },
+
+    moveFile: async (fileId: string, targetFolderId?: string): Promise<FileMetadata> => {
+        const response = await api.post(`/files/${fileId}/move`, { targetFolderId });
+        return response.data;
+    },
+    shareRootFolder: async (email: string): Promise<void> => {
+        await api.post('/files/share', { email });
+    },
+    getRootFolderPermissions: async (): Promise<any[]> => {
+        const response = await api.get('/files/share/permissions');
+        return response.data;
+    },
+    removeRootFolderPermission: async (permissionId: string): Promise<void> => {
+        await api.delete(`/files/share/permissions/${permissionId}`);
     },
 };

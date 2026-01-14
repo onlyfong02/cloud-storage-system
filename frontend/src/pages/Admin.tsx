@@ -18,7 +18,10 @@ import {
     ChevronLeft,
     ChevronRight,
     ArrowLeft,
+    Share2,
+    Trash2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -40,17 +43,21 @@ export default function AdminPage() {
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [permissions, setPermissions] = useState<any[]>([]);
+    const [deletingPermissionId, setDeletingPermissionId] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const [usersData, statsData] = await Promise.all([
+            const [usersData, statsData, permissionsData] = await Promise.all([
                 adminService.getUsers(page, 10, search),
                 adminService.getSystemStats(),
+                adminService.getAllSharedPermissions(),
             ]);
             setUsers(usersData.users);
             setPagination(usersData.pagination);
             setStats(statsData);
+            setPermissions(permissionsData);
         } catch (error) {
             console.error('Failed to load data:', error);
         } finally {
@@ -95,6 +102,23 @@ export default function AdminPage() {
             alert(err.response?.data?.message || t('admin.users.actions.updateFailed'));
         } finally {
             setUpdatingId(null);
+        }
+    };
+
+    const handleRemovePermission = async (ownerId: string, permissionId: string, email: string) => {
+        setDeletingPermissionId(permissionId);
+        const toastId = toast.loading(`Removing access for ${email}...`);
+        try {
+            await adminService.removeSharedPermission(ownerId, permissionId);
+            toast.success(`Access removed for ${email}`, { id: toastId });
+            // Refresh permissions
+            const updatedPermissions = await adminService.getAllSharedPermissions();
+            setPermissions(updatedPermissions);
+        } catch (error: any) {
+            console.error('Failed to remove permission:', error);
+            toast.error(error.message || 'Failed to remove permission', { id: toastId });
+        } finally {
+            setDeletingPermissionId(null);
         }
     };
 
@@ -348,6 +372,81 @@ export default function AdminPage() {
                                     </div>
                                 </div>
                             </>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Shared Access Management */}
+                <Card className="bg-white mt-8 border-4 border-black shadow-nb">
+                    <CardHeader className="border-b-4 border-black bg-[hsl(var(--warning))]">
+                        <CardTitle className="text-xl font-black uppercase flex items-center gap-2 text-black">
+                            <Share2 className="w-5 h-5" />
+                            {t('admin.permissions.title')}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-10">
+                                <Loader2 className="w-8 h-8 animate-spin text-black" />
+                            </div>
+                        ) : permissions.length === 0 ? (
+                            <p className="text-gray-500 italic text-center py-8 font-medium">{t('admin.permissions.noShares')}</p>
+                        ) : (
+                            <div className="overflow-x-auto border-2 border-black">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-black text-white">
+                                            <th className="text-left py-3 px-4 font-black uppercase tracking-wider text-xs">{t('admin.permissions.table.owner')}</th>
+                                            <th className="text-left py-3 px-4 font-black uppercase tracking-wider text-xs">{t('admin.permissions.table.sharedWith')}</th>
+                                            <th className="text-left py-3 px-4 font-black uppercase tracking-wider text-xs">{t('admin.permissions.table.role')}</th>
+                                            <th className="text-left py-3 px-4 font-black uppercase tracking-wider text-xs">{t('admin.permissions.table.actions')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y-2 divide-black bg-white">
+                                        {permissions.map((perm) => (
+                                            <tr key={`${perm.owner.id}-${perm.permissionId}`} className="hover:bg-gray-50 transition-colors">
+                                                <td className="py-3 px-4">
+                                                    <div>
+                                                        <p className="font-bold text-sm">{perm.owner.name}</p>
+                                                        <p className="text-xs opacity-60">{perm.owner.email}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center border border-black">
+                                                            <span className="text-xs font-bold text-blue-700">
+                                                                {(perm.email || '?')[0].toUpperCase()}
+                                                            </span>
+                                                        </div>
+                                                        <span className="font-medium text-sm">{perm.email}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    <span className="inline-flex items-center px-2 py-0.5 border border-black text-xs font-black uppercase bg-gray-100">
+                                                        {perm.role}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleRemovePermission(perm.owner.id, perm.permissionId, perm.email)}
+                                                        disabled={deletingPermissionId === perm.permissionId}
+                                                        className="h-8 w-8 p-0 border-2 border-black shadow-nb-sm"
+                                                        title={t('admin.permissions.actions.remove')}
+                                                    >
+                                                        {deletingPermissionId === perm.permissionId ? (
+                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                        ) : (
+                                                            <Trash2 className="w-4 h-4" />
+                                                        )}
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

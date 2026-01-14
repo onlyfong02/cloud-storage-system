@@ -54,10 +54,33 @@
             "audios": "Âm thanh",
             "others": "Khác"
         },
+        "folders": {
+            "create": {
+                "title": "Tạo thư mục mới",
+                "placeholder": "Tên thư mục",
+                "submit": "Tạo mới",
+                "cancel": "Hủy",
+                "success": "Đã tạo thư mục thành công",
+                "failed": "Tạo thư mục thất bại"
+            },
+            "move": {
+                "title": "Di chuyển mục",
+                "selectTarget": "Chọn thư mục đích",
+                "moveHere": "Di chuyển đến đây",
+                "cancel": "Hủy",
+                "success": "Đã di chuyển thành công",
+                "failed": "Di chuyển thất bại",
+                "root": "Thư mục gốc",
+                "cannotMoveToSelf": "Không thể di chuyển thư mục vào chính nó",
+                "moving": "Đang di chuyển..."
+            }
+        },
         "actions": {
+            "uploadTitle": "TẢI FILE LÊN",
             "upload": "TẢI FILE LÊN",
             "uploading": "ĐANG TẢI... {{progress}}%",
             "refresh": "LÀM MỚI",
+            "newFolder": "THÊM THƯ MỤC",
             "uploadHint": "Nhấp để chọn hoặc kéo thả file vào đây"
         },
         "files": {
@@ -88,6 +111,20 @@
             "pagination": "Hiển thị {{count}} / {{total}} file",
             "page": "TRANG {{current}} / {{total}}",
             "perPage": "mỗi trang"
+        },
+        "settings": {
+            "title": "Cài đặt",
+            "share": {
+                "title": "Chia sẻ quyền truy cập",
+                "note": "Lưu ý",
+                "description": "Để có thể xem trước ảnh (image preview), bạn cần chia sẻ quyền \"Người xem\" (Reader) cho email mà bạn đang dùng để đăng nhập Google trên trình duyệt này.",
+                "details": "Hành động này sẽ chia sẻ thư mục gốc của bạn trên Google Drive. Sau khi được chia sẻ, Google sẽ cho phép hiển thị ảnh thông qua link preview.",
+                "emailLabel": "Nhập Email Google",
+                "submit": "Chia sẻ ngay",
+                "sharedList": "Danh sách đã chia sẻ",
+                "noShares": "Chưa chia sẻ với ai",
+                "remove": "Xóa quyền truy cập"
+            }
         }
     },
     "admin": {
@@ -127,7 +164,20 @@
             "pagination": "Hiển thị {{count}} / {{total}} người dùng",
             "page": "TRANG {{current}} / {{total}}"
         },
-        "noAccess": "Không có quyền truy cập"
+        "noAccess": "Không có quyền truy cập",
+        "permissions": {
+            "title": "QUẢN LÝ QUYỀN CHIA SẺ",
+            "noShares": "Chưa có dữ liệu chia sẻ nào trong hệ thống",
+            "table": {
+                "owner": "Chủ sở hữu",
+                "sharedWith": "Chia sẻ với",
+                "role": "Quyền",
+                "actions": "Hành động"
+            },
+            "actions": {
+                "remove": "Thu hồi quyền"
+            }
+        }
     },
     "common": {
         "loading": "Đang tải..."

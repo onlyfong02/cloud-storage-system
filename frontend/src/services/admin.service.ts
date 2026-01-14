@@ -55,4 +55,13 @@ export const adminService = {
         const response = await api.get('/admin/stats');
         return response.data;
     },
+
+    getAllSharedPermissions: async (): Promise<any[]> => {
+        const response = await api.get('/files/admin/permissions/all');
+        return response.data;
+    },
+
+    removeSharedPermission: async (ownerId: string, permissionId: string): Promise<void> => {
+        await api.delete(`/files/admin/permissions/${ownerId}/${permissionId}`);
+    },
 };

@@ -29,6 +29,9 @@ export class FileMetadata {
 
     @Prop()
     webViewLink?: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'FileMetadata', default: null })
+    parentId?: Types.ObjectId;
 }
 
 export const FileMetadataSchema = SchemaFactory.createForClass(FileMetadata);

@@ -7,6 +7,7 @@ export interface UploadItem {
     error?: string;
     sessionUrl?: string;
     uniqueFileName?: string;
+    parentId?: string;
 }
 
 import { create } from 'zustand';
@@ -18,7 +19,7 @@ interface UploadState {
     concurrency: number;
     isHydrated: boolean;
     setHydrated: () => void;
-    addFiles: (files: File[]) => void;
+    addFiles: (files: File[], parentId?: string) => void;
     updateProgress: (id: string, progress: number) => void;
     updateStatus: (id: string, status: UploadItem['status'], error?: string) => void;
     updateSession: (id: string, sessionUrl: string, uniqueFileName: string) => void;
@@ -49,7 +50,7 @@ export const useUploadStore = create<UploadState>()(
             concurrency: 3,
             isHydrated: false,
             setHydrated: () => set({ isHydrated: true }),
-            addFiles: (files: File[]) => set((state: UploadState) => ({
+            addFiles: (files: File[], parentId?: string) => set((state: UploadState) => ({
                 queue: [
                     ...state.queue,
                     ...files.map((file) => ({
@@ -58,6 +59,7 @@ export const useUploadStore = create<UploadState>()(
                         fileName: file.name,
                         status: 'pending' as const,
                         progress: 0,
+                        parentId,
                     })),
                 ],
             })),

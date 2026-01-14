@@ -110,6 +110,53 @@ export class GoogleDriveService implements OnModuleInit {
         };
     }
 
+    async getFileStream(fileId: string): Promise<{ stream: Readable; mimeType: string }> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        const fileMetadata = await this.drive.files.get({
+            fileId,
+            fields: 'mimeType',
+        });
+
+        const response = await this.drive.files.get(
+            { fileId, alt: 'media' },
+            { responseType: 'stream' },
+        );
+
+        return {
+            stream: response.data as Readable,
+            mimeType: fileMetadata.data.mimeType || 'application/octet-stream',
+        };
+    }
+
+    async getThumbnail(fileId: string): Promise<{ stream: Readable; mimeType: string }> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        const fileMetadata = await this.drive.files.get({
+            fileId,
+            fields: 'thumbnailLink',
+        });
+
+        const thumbnailLink = fileMetadata.data.thumbnailLink;
+        if (!thumbnailLink) {
+            throw new Error('Thumbnail not available');
+        }
+
+        // Google Drive thumbnails are usually small, we can fetch them via axios
+        const response = await axios.get(thumbnailLink, {
+            responseType: 'stream',
+        });
+
+        return {
+            stream: response.data as Readable,
+            mimeType: response.headers['content-type'] || 'image/jpeg',
+        };
+    }
+
     async downloadFile(fileId: string): Promise<{ stream: Readable; mimeType: string; name: string }> {
         if (!this.drive) {
             throw new Error('Google Drive service not initialized');
@@ -138,6 +185,53 @@ export class GoogleDriveService implements OnModuleInit {
         }
         await this.drive.files.delete({ fileId });
         this.logger.log(`Deleted file: ${fileId}`);
+    }
+
+    async createFolder(name: string, parentId: string): Promise<{ id: string; name: string }> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        const folderMetadata = {
+            name: name,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [parentId],
+        };
+
+        const response = await this.drive.files.create({
+            requestBody: folderMetadata,
+            fields: 'id, name',
+        });
+
+        if (!response.data.id || !response.data.name) {
+            throw new Error('Failed to create folder on Google Drive');
+        }
+
+        this.logger.log(`Created folder on Drive: ${response.data.name} (${response.data.id})`);
+
+        return {
+            id: response.data.id,
+            name: response.data.name,
+        };
+    }
+
+    async moveFile(fileId: string, oldParentId: string, newParentId: string): Promise<void> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        try {
+            await this.drive.files.update({
+                fileId: fileId,
+                addParents: newParentId,
+                removeParents: oldParentId,
+                fields: 'id, parents',
+            });
+            this.logger.log(`Moved file ${fileId} from ${oldParentId} to ${newParentId}`);
+        } catch (error) {
+            this.logger.error(`Failed to move file ${fileId}: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 
     async getFileInfo(fileId: string): Promise<drive_v3.Schema$File> {
@@ -210,6 +304,62 @@ export class GoogleDriveService implements OnModuleInit {
                 this.logger.error(`Google API Error (${error.response?.status}): ${JSON.stringify(error.response?.data)}`);
             }
             this.logger.error(`Failed to initiate resumable upload: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
+
+    async shareFile(fileId: string, email: string, role: 'reader' | 'writer' = 'reader'): Promise<void> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        try {
+            await this.drive.permissions.create({
+                fileId: fileId,
+                requestBody: {
+                    type: 'user',
+                    role: role,
+                    emailAddress: email,
+                },
+            });
+            this.logger.log(`Shared file ${fileId} with ${email} as ${role}`);
+        } catch (error) {
+            this.logger.error(`Failed to share file ${fileId} with ${email}: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
+
+    async getPermissions(fileId: string): Promise<drive_v3.Schema$Permission[]> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        try {
+            const response = await this.drive.permissions.list({
+                fileId,
+                fields: 'permissions(id, emailAddress, role, type, displayName)',
+            });
+            const result = response.data.permissions?.filter((permission) => permission.emailAddress !== process.env.GOOGLE_DRIVE_WRITER_EMAIL) || [];
+            return result;
+        } catch (error) {
+            this.logger.error(`Failed to list permissions for file ${fileId}: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
+
+    async removePermission(fileId: string, permissionId: string): Promise<void> {
+        if (!this.drive) {
+            throw new Error('Google Drive service not initialized');
+        }
+
+        try {
+            await this.drive.permissions.delete({
+                fileId,
+                permissionId,
+            });
+            this.logger.log(`Removed permission ${permissionId} from file ${fileId}`);
+        } catch (error) {
+            this.logger.error(`Failed to remove permission ${permissionId} from file ${fileId}: ${error.message}`, error.stack);
             throw error;
         }
     }
