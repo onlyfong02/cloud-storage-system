@@ -30,6 +30,7 @@ import { UserMenu } from '@/components/UserMenu';
 import { useUploadStore } from '@/store/useUploadStore';
 import { UploadQueue } from '@/components/UploadQueue';
 import { FeedbackUnifiedModal } from '@/components/FeedbackUnifiedModal';
+import logoImg from '@/assets/logo.png';
 
 export default function Dashboard() {
     const { t } = useTranslation();
@@ -376,7 +377,7 @@ export default function Dashboard() {
                 <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4 w-full sm:w-auto">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm shrink-0 overflow-hidden">
-                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover grayscale brightness-200 contrast-200" />
+                            <img src={logoImg} alt="Logo" className="w-full h-full object-cover grayscale brightness-200 contrast-200" />
                         </div>
                         <div className="min-w-0">
                             <h1 className="font-black text-lg sm:text-2xl uppercase tracking-tighter truncate">The Backdrive</h1>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import logoImg from '@/assets/logo.png';
 
 export default function LoginPage() {
     const { t } = useTranslation();
@@ -59,7 +60,7 @@ export default function LoginPage() {
             <Card className="w-full max-w-md animate-fade-in">
                 <CardHeader className="text-center space-y-6">
                     <div className="mx-auto w-16 h-16 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm overflow-hidden">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover grayscale brightness-200 contrast-200" />
+                        <img src={logoImg} alt="Logo" className="w-full h-full object-cover grayscale brightness-200 contrast-200" />
                     </div>
                     <div className="space-y-1">
                         <CardTitle className="text-3xl font-black uppercase tracking-tighter">{t('auth.login.title')}</CardTitle>
