@@ -110,24 +110,35 @@ export class GoogleDriveService implements OnModuleInit {
         };
     }
 
-    async getFileStream(fileId: string): Promise<{ stream: Readable; mimeType: string }> {
+    async getFileStream(fileId: string, range?: string): Promise<{ stream: Readable; mimeType: string; size: number }> {
         if (!this.drive) {
             throw new Error('Google Drive service not initialized');
         }
 
         const fileMetadata = await this.drive.files.get({
             fileId,
-            fields: 'mimeType',
+            fields: 'mimeType, size',
         });
+
+        const axiosOptions: any = {
+            responseType: 'stream',
+        };
+
+        if (range) {
+            axiosOptions.headers = {
+                Range: range,
+            };
+        }
 
         const response = await this.drive.files.get(
             { fileId, alt: 'media' },
-            { responseType: 'stream' },
+            axiosOptions,
         );
 
         return {
             stream: response.data as Readable,
             mimeType: fileMetadata.data.mimeType || 'application/octet-stream',
+            size: parseInt(fileMetadata.data.size || '0'),
         };
     }
 
@@ -256,7 +267,7 @@ export class GoogleDriveService implements OnModuleInit {
         }
         const response = await this.drive.files.get({
             fileId,
-            fields: 'id, name, size, mimeType, createdTime, thumbnailLink, webViewLink',
+            fields: 'id, name, size, mimeType, createdTime, thumbnailLink, webViewLink, parents',
         });
 
         return response.data;

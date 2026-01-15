@@ -14,19 +14,43 @@ import {
     Body,
     Query,
     BadRequestException,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import * as express from 'express';
 import { FilesService } from './files.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SignedUrlService } from './signed-url.service';
 
 @ApiTags('files')
 @ApiBearerAuth()
 @Controller('files')
 @UseGuards(JwtAuthGuard)
 export class FilesController {
-    constructor(private readonly filesService: FilesService) { }
+    constructor(
+        private readonly filesService: FilesService,
+        private readonly signedUrlService: SignedUrlService,
+    ) { }
+
+    @Post('auth/cookie')
+    @ApiOperation({ summary: 'Set access token cookie for media streaming' })
+    async setCookie(@Request() req, @Res() res: any) {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).send('No token provided');
+        }
+
+        // Set secure cookie
+        res.cookie('access_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+
+        return res.status(200).send({ message: 'Cookie set' });
+    }
 
     @Get()
     @ApiOperation({ summary: 'Get all files for current user with pagination' })
@@ -136,6 +160,37 @@ export class FilesController {
         return this.filesService.getFileById(id, req.user.userId);
     }
 
+    @Get(':id/signed-url')
+    @ApiOperation({ summary: 'Generate a signed URL for file access' })
+    async getSignedUrl(
+        @Param('id') id: string,
+        @Request() req,
+        @Query('type') type: 'view' | 'download' = 'view',
+    ) {
+        // Verify user has access to this file
+        await this.filesService.getFileById(id, req.user.userId);
+
+        // Generate signed params
+        const signedParams = this.signedUrlService.generateSignedParams(
+            id,
+            req.user.userId,
+            5, // 5 minutes expiry
+        );
+
+        // Build the signed URL
+        const baseUrl = `/api/files/${id}/signed-${type}`;
+        const queryParams = new URLSearchParams({
+            userId: signedParams.userId,
+            expires: signedParams.expires.toString(),
+            signature: signedParams.signature,
+        });
+
+        return {
+            url: `${baseUrl}?${queryParams.toString()}`,
+            expiresAt: new Date(signedParams.expires).toISOString(),
+        };
+    }
+
     @Get(':id/download')
     @ApiOperation({ summary: 'Download a file' })
     async downloadFile(
@@ -192,15 +247,46 @@ export class FilesController {
         @Request() req,
         @Res() res: any,
     ) {
-        const { stream, mimeType } = await this.filesService.getFileStream(
-            id,
-            req.user.userId,
-        );
+        const range = req.headers.range;
 
-        res.setHeader('Content-Type', mimeType);
-        res.setHeader('Content-Disposition', 'inline');
+        if (range) {
+            const { stream, mimeType, size } = await this.filesService.getFileStream(
+                id,
+                req.user.userId,
+                range,
+            );
 
-        stream.pipe(res);
+            // Parse range to set correct headers
+            // Range format: bytes=start-end
+            const parts = range.replace(/bytes=/, "").split("-");
+            if (parts.length > 0) {
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : size - 1;
+                const chunksize = (end - start) + 1;
+
+                res.status(206);
+                res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+                res.setHeader('Accept-Ranges', 'bytes');
+                res.setHeader('Content-Length', chunksize);
+            }
+
+            res.setHeader('Content-Type', mimeType);
+            res.setHeader('Content-Disposition', 'inline');
+
+            stream.pipe(res);
+        } else {
+            const { stream, mimeType, size } = await this.filesService.getFileStream(
+                id,
+                req.user.userId,
+            );
+
+            res.setHeader('Content-Type', mimeType);
+            res.setHeader('Content-Disposition', 'inline');
+            res.setHeader('Content-Length', size);
+            res.setHeader('Accept-Ranges', 'bytes');
+
+            stream.pipe(res);
+        }
     }
 
     @Get(':id/thumbnail')

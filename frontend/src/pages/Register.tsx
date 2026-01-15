@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -58,8 +58,8 @@ export default function RegisterPage() {
             </div>
             <Card className="w-full max-w-md animate-fade-in">
                 <CardHeader className="text-center space-y-6">
-                    <div className="mx-auto w-16 h-16 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm">
-                        <Cloud className="w-8 h-8 text-black" />
+                    <div className="mx-auto w-16 h-16 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover grayscale brightness-200 contrast-200" />
                     </div>
                     <div className="space-y-1">
                         <CardTitle className="text-3xl font-black uppercase tracking-tighter">{t('auth.register.title')}</CardTitle>

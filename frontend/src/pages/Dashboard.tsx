@@ -22,6 +22,8 @@ import {
     Folder,
     MoveVertical,
     ChevronRight,
+    FileText,
+    ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UserMenu } from '@/components/UserMenu';
@@ -48,6 +50,7 @@ export default function Dashboard() {
     const [pageSize, setPageSize] = useState(12);
     const [isDragging, setIsDragging] = useState(false);
     const [previewFile, setPreviewFile] = useState<FileMetadata | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [fileStats, setFileStats] = useState<{
         total: number;
         images: number;
@@ -232,13 +235,24 @@ export default function Dashboard() {
         }
     };
 
-    const handlePreview = (file: FileMetadata) => {
+    const handlePreview = async (file: FileMetadata) => {
         if (file.mimeType === 'application/vnd.google-apps.folder') {
-            // Folder interaction logic could go here later (e.g., enter folder)
             return;
         }
+
         if (file.webViewLink) {
-            setPreviewFile(file);
+            try {
+                // Get signed URL for secure preview
+                const { url } = await fileService.getSignedUrl(file.id, 'view');
+                // Backend returns URL like /api/files/:id/signed-view, so use base URL without /api
+                const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/api$/, '');
+                const fullUrl = `${baseUrl}${url}`;
+                setPreviewUrl(fullUrl);
+                setPreviewFile(file);
+            } catch (error) {
+                console.error('Failed to get signed URL:', error);
+                toast.error(t('dashboard.files.previewUnavailable'));
+            }
         } else {
             toast.error(t('dashboard.files.previewUnavailable'));
         }
@@ -361,11 +375,11 @@ export default function Dashboard() {
             <header className="border-b-4 border-black bg-white sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm shrink-0">
-                            <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[hsl(var(--primary))] border-2 border-black flex items-center justify-center shadow-nb-sm shrink-0 overflow-hidden">
+                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover grayscale brightness-200 contrast-200" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="font-black text-lg sm:text-2xl uppercase tracking-tighter truncate">Fong's Cloud Storage</h1>
+                            <h1 className="font-black text-lg sm:text-2xl uppercase tracking-tighter truncate">The Backdrive</h1>
                             <p className="text-[10px] sm:text-sm text-black font-medium truncate opacity-60">{user?.email}</p>
                         </div>
                     </div>
@@ -834,23 +848,72 @@ export default function Dashboard() {
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    onClick={() => setPreviewFile(null)}
+                                    onClick={() => { setPreviewFile(null); setPreviewUrl(null); }}
                                     className="bg-white border-2 border-black hover:bg-[hsl(var(--accent))] shadow-nb-sm flex-shrink-0"
                                 >
                                     <X className="w-5 h-5" />
                                 </Button>
                             </CardHeader>
                             <CardContent className="p-0 bg-gray-100 h-[60vh] md:h-[70vh] relative overflow-hidden">
-                                {previewFile.mimeType.startsWith('image/') ? (
-                                    <ZoomableImage src={`${import.meta.env.VITE_API_URL || '/api'}/files/${previewFile.id}/view?token=${localStorage.getItem('accessToken')}`} alt={previewFile.originalName} />
-                                ) : previewFile.webViewLink && (
-                                    <iframe
-                                        src={previewFile.webViewLink.replace('/view?usp=drivesdk', '/preview').replace('/view', '/preview')}
-                                        className="w-full h-full border-none"
-                                        allow="autoplay"
-                                        allowFullScreen
-                                    />
-                                )}
+                                {(() => {
+                                    // Use the signed URL that was fetched in handlePreview
+                                    const fileUrl = previewUrl || '';
+
+                                    if (previewFile.mimeType.startsWith('image/')) {
+                                        return <ZoomableImage src={fileUrl} alt={previewFile.originalName} />;
+                                    } else if (previewFile.mimeType.startsWith('video/')) {
+                                        return (
+                                            <div className="w-full h-full flex items-center justify-center bg-black">
+                                                <video
+                                                    controls
+                                                    autoPlay
+                                                    className="max-w-full max-h-full"
+                                                    src={fileUrl}
+                                                >
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            </div>
+                                        );
+                                    } else if (previewFile.mimeType.startsWith('audio/')) {
+                                        return (
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                                <audio controls autoPlay src={fileUrl} className="w-full max-w-md" />
+                                            </div>
+                                        );
+                                    } else if (previewFile.mimeType === 'application/pdf') {
+                                        return (
+                                            <iframe
+                                                src={fileUrl}
+                                                className="w-full h-full border-none"
+                                                title={previewFile.originalName}
+                                            />
+                                        );
+                                    } else {
+                                        return (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-center p-8 gap-4">
+                                                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center border-2 border-black shadow-nb-sm">
+                                                    <FileText className="w-10 h-10 text-gray-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-lg">{t('dashboard.files.previewUnavailable')}</p>
+                                                    <p className="text-sm opacity-60">
+                                                        {previewFile.mimeType.includes('google-apps')
+                                                            ? "Google Docs cannot be embedded due to security policies."
+                                                            : "This file type cannot be previewed directly."}
+                                                    </p>
+                                                </div>
+                                                {previewFile.webViewLink && (
+                                                    <Button
+                                                        onClick={() => window.open(previewFile.webViewLink, '_blank')}
+                                                        className="bg-[hsl(var(--primary))] border-2 border-black shadow-nb-sm text-black font-black uppercase"
+                                                    >
+                                                        {t('dashboard.files.openInNewTab')} <ExternalLink className="w-4 h-4 ml-2" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                })()}
                             </CardContent>
                             <div className="p-4 border-t-4 border-black bg-white flex justify-between items-center font-black uppercase text-sm">
                                 <div className="hidden sm:block">

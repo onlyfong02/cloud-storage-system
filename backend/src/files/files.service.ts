@@ -156,12 +156,38 @@ export class FilesService {
         }
 
         try {
+            // Check if file already exists in database
+            const existingFile = await this.fileModel.findOne({ driveFileId });
+            if (existingFile) {
+                this.logger.warn(`[FilesService] driveFileId ${driveFileId} already exists in database`);
+                throw new BadRequestException('File already registered in the system');
+            }
+
             // Double check the file exists on Drive
             this.logger.log(`[FilesService] Verifying file on Google Drive: ${driveFileId}`);
             const driveFile = await this.googleDriveService.getFileInfo(driveFileId);
             if (!driveFile) {
                 this.logger.error(`[FilesService] File not found on Google Drive: ${driveFileId}`);
                 throw new NotFoundException('File not found on Google Drive');
+            }
+
+            // Security check: Verify the file belongs to the user's folder
+            const user = await this.usersService.findById(userId);
+            let expectedParentDriveId: string;
+
+            if (parentId) {
+                const parentFolder = await this.fileModel.findById(parentId);
+                if (!parentFolder || parentFolder.ownerId.toString() !== userId) {
+                    throw new ForbiddenException('Invalid parent folder');
+                }
+                expectedParentDriveId = parentFolder.driveFileId;
+            } else {
+                expectedParentDriveId = user.driveFolderId;
+            }
+
+            if (!driveFile.parents || !driveFile.parents.includes(expectedParentDriveId)) {
+                this.logger.error(`[FilesService] Security Violation: User ${userId} tried to claim file ${driveFileId} which is not in their folder`);
+                throw new ForbiddenException('You do not have permission to register this file');
             }
 
             this.logger.log(`[FilesService] File verified on Drive: ${driveFile.name} (Size: ${driveFile.size})`);
@@ -267,9 +293,9 @@ export class FilesService {
         return { files, total };
     }
 
-    async getFileStream(fileId: string, userId: string): Promise<{ stream: Readable; mimeType: string }> {
+    async getFileStream(fileId: string, userId: string, range?: string): Promise<{ stream: Readable; mimeType: string; size: number }> {
         const file = await this.getFileById(fileId, userId);
-        return this.googleDriveService.getFileStream(file.driveFileId);
+        return this.googleDriveService.getFileStream(file.driveFileId, range);
     }
 
     async getThumbnail(fileId: string, userId: string): Promise<{ stream: Readable; mimeType: string }> {

@@ -2,7 +2,7 @@
     "auth": {
         "login": {
             "title": "Chào mừng",
-            "subtitle": "Đăng nhập vào Fong's Cloud Storage System",
+            "subtitle": "Đăng nhập vào The Backdrive",
             "email": "Email",
             "password": "Mật khẩu",
             "submit": "Đăng nhập",
@@ -14,8 +14,8 @@
             "invalidCredentials": "Sai mật khẩu hoặc tài khoản"
         },
         "register": {
-            "title": "Tham gia với Fong",
-            "subtitle": "Tạo tài khoản Fong's Cloud Storage System",
+            "title": "Tham gia The Backdrive",
+            "subtitle": "Tạo tài khoản The Backdrive",
             "name": "Họ và tên",
             "namePlaceholder": "Fong Nguyen",
             "email": "Email",
@@ -32,7 +32,7 @@
         }
     },
     "dashboard": {
-        "title": "Fong's Cloud Storage System",
+        "title": "The Backdrive",
         "admin": "Admin",
         "logout": "Đăng xuất",
         "menu": {

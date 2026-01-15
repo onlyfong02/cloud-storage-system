@@ -51,7 +51,7 @@ export default function AboutMe() {
                             <div className="md:w-1/3 bg-gray-50 p-8 border-b-4 md:border-b-0 md:border-r-4 border-black flex flex-col items-center text-center">
                                 <div className="w-40 h-40 bg-black rounded-full overflow-hidden border-4 border-black shadow-nb mb-6 relative group">
                                     <img
-                                        src="./public/about_me_img.jpg"
+                                        src="/about_me_img.jpg"
                                         alt="Fong Nguyen"
                                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                                     />

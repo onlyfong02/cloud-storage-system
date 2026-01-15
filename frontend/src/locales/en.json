@@ -2,7 +2,7 @@
     "auth": {
         "login": {
             "title": "Welcome",
-            "subtitle": "Login to Fong's Cloud Storage System",
+            "subtitle": "Login to The Backdrive",
             "email": "Email",
             "password": "Password",
             "submit": "Login",
@@ -14,8 +14,8 @@
             "invalidCredentials": "Incorrect email or password"
         },
         "register": {
-            "title": "Join With Fong",
-            "subtitle": "Create a new Fong's Cloud Storage System",
+            "title": "Join With The Backdrive",
+            "subtitle": "Create a new The Backdrive",
             "name": "Full Name",
             "namePlaceholder": "Fong Nguyen",
             "email": "Email",
@@ -32,7 +32,7 @@
         }
     },
     "dashboard": {
-        "title": "Cloud Storage",
+        "title": "The Backdrive",
         "admin": "Admin",
         "logout": "Logout",
         "menu": {

@@ -7,6 +7,8 @@ import { FilesModule } from './files/files.module';
 import { GoogleDriveModule } from './google-drive/google-drive.module';
 import { AdminModule } from './admin/admin.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -27,6 +29,16 @@ import { FeedbackModule } from './feedback/feedback.module';
     GoogleDriveModule,
     AdminModule,
     FeedbackModule,
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule { } 

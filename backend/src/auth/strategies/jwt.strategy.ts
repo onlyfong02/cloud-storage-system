@@ -20,7 +20,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         super({
             jwtFromRequest: ExtractJwt.fromExtractors([
                 ExtractJwt.fromAuthHeaderAsBearerToken(),
-                ExtractJwt.fromUrlQueryParameter('token'),
+                // Extract from cookie
+                (req) => {
+                    if (req?.cookies?.['access_token']) {
+                        return req.cookies['access_token'];
+                    }
+                    return null;
+                },
+                // Extract from query parameter (for file downloads/thumbnails)
+                (req) => {
+                    if (req?.query?.token) {
+                        return req.query.token as string;
+                    }
+                    return null;
+                },
             ]),
             ignoreExpiration: false,
             secretOrKey: configService.get<string>('JWT_SECRET') || '',

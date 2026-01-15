@@ -180,4 +180,15 @@ export const fileService = {
     removeRootFolderPermission: async (permissionId: string): Promise<void> => {
         await api.delete(`/files/share/permissions/${permissionId}`);
     },
+
+    /**
+     * Get a signed URL for secure file preview/download
+     * The signed URL is valid for 5 minutes and doesn't expose the JWT token
+     */
+    getSignedUrl: async (fileId: string, type: 'view' | 'download' = 'view'): Promise<{ url: string; expiresAt: string }> => {
+        const response = await api.get(`/files/${fileId}/signed-url`, {
+            params: { type },
+        });
+        return response.data;
+    },
 };

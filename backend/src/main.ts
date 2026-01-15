@@ -2,6 +2,9 @@ import { INestApplicationContext, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
+
+import cookieParser from 'cookie-parser';
 
 let cachedApp: any;
 
@@ -9,10 +12,14 @@ async function bootstrap() {
   if (!cachedApp) {
     const app = await NestFactory.create(AppModule);
 
+    // Security headers
+    app.use(helmet());
+    app.use(cookieParser());
+
     // Enable CORS
     const allowedOrigins = process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(',')
-      : ['http://localhost:5173', 'http://localhost:5174', 'https://cloud-storage-system-client.vercel.app'];
+      : ['http://localhost:5174'];
 
     app.enableCors({
       origin: allowedOrigins,
