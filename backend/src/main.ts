@@ -12,14 +12,17 @@ async function bootstrap() {
   if (!cachedApp) {
     const app = await NestFactory.create(AppModule);
 
-    // Security headers
-    app.use(helmet());
+    // Security headers - configured to allow cross-origin resource loading
+    app.use(helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginEmbedderPolicy: false,
+    }));
     app.use(cookieParser());
 
     // Enable CORS
     const allowedOrigins = process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(',')
-      : ['http://localhost:5174'];
+      : ['http://localhost:5173', 'http://localhost:5174', 'https://thebackdrive.vercel.app'];
 
     app.enableCors({
       origin: allowedOrigins,
