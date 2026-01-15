@@ -61,4 +61,14 @@ export const authService = {
         const response = await api.get('/users/me/storage');
         return response.data;
     },
+
+    updateProfile: async (name: string): Promise<User> => {
+        const response = await api.patch('/users/me', { name });
+        return response.data;
+    },
+
+    changePassword: async (oldPassword: string, newPassword: string): Promise<{ message: string }> => {
+        const response = await api.patch('/users/me/password', { oldPassword, newPassword });
+        return response.data;
+    },
 };

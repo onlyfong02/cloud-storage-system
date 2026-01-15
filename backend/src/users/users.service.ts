@@ -118,6 +118,24 @@ export class UsersService {
         return user.usedStorage + fileSize <= user.maxStorage;
     }
 
+    async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+        const user = await this.userModel.findById(userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        // Verify old password
+        const isValidPassword = await bcrypt.compare(oldPassword, user.password);
+        if (!isValidPassword) {
+            throw new ConflictException('Current password is incorrect');
+        }
+
+        // Hash and update new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+    }
+
     async isActive(userId: string): Promise<boolean> {
         const user = await this.userModel.findById(userId);
         return user?.status === UserStatus.ACTIVE;

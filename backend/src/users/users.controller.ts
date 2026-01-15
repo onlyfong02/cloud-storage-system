@@ -1,7 +1,7 @@
 import { Controller, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto';
+import { UpdateUserDto, ChangePasswordDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('users')
@@ -33,5 +33,16 @@ export class UsersController {
             availableStorage: user.maxStorage - user.usedStorage,
             usagePercentage: Math.round((user.usedStorage / user.maxStorage) * 100),
         };
+    }
+
+    @Patch('me/password')
+    @ApiOperation({ summary: 'Change current user password' })
+    async changePassword(@Request() req, @Body() changePasswordDto: ChangePasswordDto) {
+        await this.usersService.changePassword(
+            req.user.userId,
+            changePasswordDto.oldPassword,
+            changePasswordDto.newPassword,
+        );
+        return { message: 'Password changed successfully' };
     }
 }

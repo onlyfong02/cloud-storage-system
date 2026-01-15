@@ -121,6 +121,21 @@
         },
         "settings": {
             "title": "Cài đặt",
+            "account": {
+                "title": "Thông tin tài khoản",
+                "name": "Họ và tên",
+                "updateName": "Cập nhật tên",
+                "changePassword": "Đổi mật khẩu",
+                "oldPassword": "Mật khẩu cũ",
+                "newPassword": "Mật khẩu mới",
+                "confirmPassword": "Xác nhận mật khẩu mới",
+                "submit": "Lưu thay đổi",
+                "updateSuccess": "Cập nhật thành công",
+                "updateFailed": "Cập nhật thất bại",
+                "passwordMismatch": "Mật khẩu không khớp",
+                "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+                "incorrectPassword": "Mật khẩu hiện tại không đúng"
+            },
             "share": {
                 "title": "Chia sẻ quyền truy cập",
                 "note": "Lưu ý",

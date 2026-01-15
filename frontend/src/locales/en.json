@@ -122,6 +122,21 @@
         },
         "settings": {
             "title": "Settings",
+            "account": {
+                "title": "Account Information",
+                "name": "Full Name",
+                "updateName": "Update Name",
+                "changePassword": "Change Password",
+                "oldPassword": "Current Password",
+                "newPassword": "New Password",
+                "confirmPassword": "Confirm New Password",
+                "submit": "Save Changes",
+                "updateSuccess": "Updated successfully",
+                "updateFailed": "Update failed",
+                "passwordMismatch": "Passwords do not match",
+                "passwordTooShort": "Password must be at least 6 characters",
+                "incorrectPassword": "Current password is incorrect"
+            },
             "share": {
                 "title": "Access Sharing",
                 "note": "Note",
